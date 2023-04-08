@@ -12,6 +12,8 @@
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
+#include <unistd.h>
 
 void print_help() {
     printf(
