@@ -18,11 +18,16 @@ int main( int cargs, char** argv ) {
   char* curr_dir = malloc(PATH_MAX);
   char* pathenv = malloc(MAX_LENGTH);
 
-  //get current working directory
-  if (curr_dir == NULL ) {
-    perror("Error: unable to malloc curr_dir, ");
+  if ( pathenv == NULL ) {
+    perror("Error: Unable to malloc pathenv ");
     return 1;
   }
+  if (curr_dir == NULL ) {
+    perror("Error: unable to malloc curr_dir ");
+    return 1;
+  }
+
+  //get current working directory
   if ( getcwd(curr_dir, PATH_MAX) != NULL ) {
     printf("Current directory is: %s\n", curr_dir);
   }
@@ -32,14 +37,12 @@ int main( int cargs, char** argv ) {
   }
 
   // store current system PATH
-  if ( pathenv == NULL ) {
-    perror("Unable to malloc pathenv ");
+  pathenv = getenv("PATH");
+  if (pathenv == NULL) {
+    perror("Error: no match for PATH in process environment.");
     return 1;
   }
-  else{
-    pathenv = getenv("PATH");
-    printf("Current env PATH is: %s\n", pathenv);
-  }
+  printf("Current env PATH is: %s\n", pathenv);
 
   // usage/help statement
   if ( cargs == 2 && strcmp(argv[1], "-help") == 0 ) {
