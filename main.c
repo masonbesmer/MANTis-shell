@@ -5,9 +5,7 @@
 // desc:    main function definition and basic shell logic
 
 #include "main.h"
-
-#define MAX_LENGTH    512
-
+#include "path.h"
 // PARSE User args into a list of commands to be processed by the shell.
 int parse_uargs( char** user_args, int num_args ) {
   //TODO
@@ -16,14 +14,10 @@ int parse_uargs( char** user_args, int num_args ) {
 int main( int cargs, char** argv ) {
 
   char* curr_dir = malloc(PATH_MAX);
-  char* pathenv = malloc(MAX_LENGTH);
+  char* pathenv = malloc(MAX_PATH_LENGTH);
 
-  if ( pathenv == NULL ) {
-    perror("Error: Unable to malloc pathenv ");
-    return 1;
-  }
-  if (curr_dir == NULL ) {
-    perror("Error: unable to malloc curr_dir ");
+  if ( curr_dir == NULL ) {
+    perror("ERROR: unable to malloc curr_dir ");
     return 1;
   }
 
@@ -32,14 +26,24 @@ int main( int cargs, char** argv ) {
     printf("Current directory is: %s\n", curr_dir);
   }
   else {
-    perror("Error: getcwd failed ");
+    perror("ERROR: getcwd failed ");
     return 1;
   }
 
-  // store current system PATH
+  // store current system PATH in the ENV_PATH file
   pathenv = getenv("PATH");
-  if (pathenv == NULL) {
-    perror("Error: no match for PATH in process environment.");
+  if ( pathenv == NULL ) {
+    perror("ERROR: no match for PATH in process environment ");
+    return 1;
+  }
+
+  if ( set_pathenv(SHELL_PATH, pathenv) == -1 ) {
+    perror("ERROR: failure to retrieve and set PATH from system ");
+    return 1;
+  }
+  pathenv = get_pathenv(SHELL_PATH);
+  if (pathenv == NULL ) {
+    perror("ERROR: unable to retreive pathenv from file ");
     return 1;
   }
   printf("Current env PATH is: %s\n", pathenv);
