@@ -9,15 +9,23 @@
 // PARSE User args into a list of commands to be processed by the shell.
 int parse_uargs( char** user_args, int num_args ) {
   //TODO
+  return 0;
 }
 
 int main( int cargs, char** argv ) {
 
-  char* curr_dir = malloc(PATH_MAX);
-  char* pathenv = malloc(MAX_PATH_LENGTH);
+  printf(
+      // We should see if we can come up with a better name...
+      "Welcome to MANTis, A Basic Interactive Shell Built for CSCE3600\n\n"
+      );
 
-  if ( curr_dir == NULL ) {
-    perror("ERROR: unable to malloc curr_dir ");
+  size_t userin_len = MAX_ARG_LEN;
+  char* curr_dir = malloc(PATH_MAX); // PATH_MAX is a system defined macro
+  char* userin = malloc(MAX_ARG_LEN);
+  char* pathenv;
+
+  if ( curr_dir == NULL || userin == NULL ) {
+    perror("ERROR: unable to malloc during shell init ");
     return 1;
   }
 
@@ -42,9 +50,8 @@ int main( int cargs, char** argv ) {
   }
 
   // test path was written correctly by reading the path from file
-  pathenv = get_pathenv(SHELL_PATH);
-  if (pathenv == NULL ) {
-    perror("ERROR: unable to retreive pathenv from file ");
+  if ( (pathenv = get_pathenv(SHELL_PATH)) == NULL ) {
+    perror("ERROR: failure to retreive from ENV_PATH");
     return 1;
   }
   printf("Current env PATH is: %s\n", pathenv);
@@ -57,12 +64,28 @@ int main( int cargs, char** argv ) {
 
   // interactive mode
   else if ( cargs == 1 ) {
-    printf("Interactive mode.\n");
+
+    printf("\nEnter \"quit\" to exit the shell. \n\n");
+
+    // TODO: Implement exit()
+    do {
+      printf("--:> ");
+      if ( getline(&userin, &userin_len, stdin) != -1 ) {
+        printf("User entered: %s\n", userin);
+      }
+      else {
+        perror("User input too long or error reading from stdin ");
+      }
+    } while (strcmp(userin, "quit\n")); //this exit condition is temporary
   }
 
   // batch mode
   else if ( cargs > 1 ) {
     printf("Batch mode.\n");
   }
+
+  free(curr_dir);
+  free(pathenv);
+  free(userin);
   return 0;
 }

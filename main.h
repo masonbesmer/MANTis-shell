@@ -15,6 +15,8 @@
 #include <limits.h>
 #include <unistd.h>
 
+#define MAX_ARG_LEN     512
+
 void print_help() {
     printf(
       "MANTis - an interactive shell by Mason, Alex, Nathan, and Tobi\n"

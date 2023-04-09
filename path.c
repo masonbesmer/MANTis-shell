@@ -26,12 +26,14 @@ char* get_pathenv(char* env_filename) {
 
   if ( (path_file = fopen(env_filename, READ_ONLY)) == NULL ) {
     perror("ERROR: Failed to open path_file ");
+    free(path);
     return NULL;
   }
 
   if ( fgets(path, MAX_PATH_LENGTH, path_file) == NULL ) {
     perror("ERROR: Failed to read path from path_file" );
     fclose(path_file);
+    free(path);
     return NULL;
   }
 
