@@ -14,22 +14,27 @@
 // Retrieve PATH env from file passed by filename
 // Returns a char buffer on success, NULL on error.
 char* get_pathenv(char* env_filename) {
+
   char* path;
   FILE* path_file;
   path = malloc(MAX_PATH_LENGTH);
+
   if ( path == NULL ) {
     perror("ERROR: Failed to malloc path in get_path ");
     return path;
   }
-  if ( fopen(env_filename, READ_ONLY) == NULL ) {
+
+  if ( (path_file = fopen(env_filename, READ_ONLY)) == NULL ) {
     perror("ERROR: Failed to open path_file ");
     return NULL;
   }
+
   if ( fgets(path, MAX_PATH_LENGTH, path_file) == NULL ) {
     perror("ERROR: Failed to read path from path_file" );
     fclose(path_file);
     return NULL;
   }
+
   fclose(path_file);
   return path;
 }
@@ -39,11 +44,13 @@ char* get_pathenv(char* env_filename) {
 // and then call set_path to set the new path in the path_file file.
 // returns: 0 on success, -1 on error
 int set_pathenv(char* env_filename, char* new_path) {
+
   FILE* path_file;
   if ( (path_file = fopen(env_filename, TRUNC)) == NULL ) {
     perror("ERROR: Failed to open/create path_file ");
     return -1;
   }
+
   if ( fputs(new_path, path_file) != EOF ) {
     fclose(path_file);
     return 0;
@@ -57,10 +64,12 @@ int set_pathenv(char* env_filename, char* new_path) {
 
 // append string to path
 int append_to_path(char* dirstr) {
+
   return 0;
 }
 
 // remove string from path
 int remove_from_path(char* dirstr) {
+
   return 0;
 }

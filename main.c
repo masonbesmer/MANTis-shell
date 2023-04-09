@@ -36,11 +36,12 @@ int main( int cargs, char** argv ) {
     perror("ERROR: no match for PATH in process environment ");
     return 1;
   }
-
   if ( set_pathenv(SHELL_PATH, pathenv) == -1 ) {
-    perror("ERROR: failure to retrieve and set PATH from system ");
+    perror("ERROR: failure to write to ENV_PATH ");
     return 1;
   }
+
+  // test path was written correctly by reading the path from file
   pathenv = get_pathenv(SHELL_PATH);
   if (pathenv == NULL ) {
     perror("ERROR: unable to retreive pathenv from file ");
@@ -53,10 +54,12 @@ int main( int cargs, char** argv ) {
     print_help();
     return 0;
   }
+
   // interactive mode
   else if ( cargs == 1 ) {
     printf("Interactive mode.\n");
   }
+
   // batch mode
   else if ( cargs > 1 ) {
     printf("Batch mode.\n");
