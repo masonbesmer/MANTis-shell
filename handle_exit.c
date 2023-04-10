@@ -1,9 +1,9 @@
 #include "handle_exit.h"
 
-pid_t shell_pgid;
-int shell_terminal;
 
 int handle_exit_signal() {
+  pid_t shell_pgid;
+  int shell_terminal;
   //put shell in to its own process group
   shell_pgid = getpid();
   if (setpgid(shell_pgid, shell_pgid) < 0) {

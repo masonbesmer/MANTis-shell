@@ -8,9 +8,6 @@
 
 #define SIGSTP 20
 
-pid_t shell_pgid;
-int shell_terminal;
-
 int handle_exit_signal();
 
 #endif
