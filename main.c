@@ -6,8 +6,13 @@
 
 #include "main.h"
 #include "path.h"
+#include "handle_exit.h"
 
 int main( int cargs, char** argv ) {
+  if (handle_exit_signal() == -1) {
+    perror("ERROR: unable to handle exit signal ");
+    return 1;
+  }
 
   printf(
       // We should see if we can come up with a better name...
