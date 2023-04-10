@@ -6,11 +6,6 @@
 
 #include "main.h"
 #include "path.h"
-// PARSE User args into a list of commands to be processed by the shell.
-int parse_uargs( char** user_args, int num_args ) {
-  //TODO
-  return 0;
-}
 
 int main( int cargs, char** argv ) {
 
