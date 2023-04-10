@@ -6,7 +6,7 @@
 #=================================================|
 EXE = newshell
 CC = gcc
-FLAGS =  -c -Wall
+FLAGS =  -c -Wall -pthread
 LNKFLAGS = -w
 SRCS = $(wildcard *.c)
 OBJS = $(SRCS:%.c=%.o)
