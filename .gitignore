@@ -57,7 +57,7 @@ dkms.conf
 
 ### VisualStudioCode ###
 .vscode/*
-.code-workspace
+*.code-workspace
 
 # Local History for Visual Studio Code
 .history/
