@@ -12,8 +12,9 @@
 #include "signal.h"
 #include "string.h"
 #include "limits.h"
+#include "sys/wait.h"
 
-char *current_working_directory;
+//char *current_working_directory;
 
 
 int shell_cmd(char **args);

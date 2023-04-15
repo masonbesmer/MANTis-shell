@@ -7,6 +7,7 @@
 #include "main.h"
 #include "path.h"
 #include "handle_exit.h"
+#include "cmd.h"
 
 void print_help() {
     printf(
@@ -14,6 +15,9 @@ void print_help() {
       "Usage: newshell [batchfile]\n"
     );
 }
+
+int test = 0;
+char *testInput[] = {"top", NULL};
 
 int main( int cargs, char** argv ) {
   if (handle_exit_signal() == -1) {
@@ -76,6 +80,10 @@ int main( int cargs, char** argv ) {
 
     // TODO: Implement exit()
     do {
+      if(test == 0){
+        test = 1;
+        shell_cmd(testInput);
+      }
       printf("--:> ");
       if ( getline(&userin, &userin_len, stdin) != -1 ) {
         printf("User entered: %s\n", userin);
