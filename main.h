@@ -14,7 +14,8 @@
 #include <string.h>
 #include <limits.h>
 #include <unistd.h>
+#include <fcntl.h>
 
-#define MAX_ARG_LEN     512
+#define MAX_ARG_LEN     2048
 
 #endif

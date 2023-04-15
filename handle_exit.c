@@ -11,7 +11,7 @@ int handle_exit_signal() {
     return -1;
   }
 
-  //get terminal process associated with the shell
+  //get terminal process associated with the shell, kill everything in the shell's process group but itself
   shell_terminal = STDIN_FILENO;
   while (tcgetpgrp(shell_terminal) != (shell_pgid = getpgrp())) {
     kill(-shell_pgid, SIGTTIN);

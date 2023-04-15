@@ -17,7 +17,7 @@ void print_help() {
 }
 
 int test = 0;
-char *testInput[] = {"top", NULL};
+char *testInput[] = {"test", NULL};
 
 int main( int cargs, char** argv ) {
   if (handle_exit_signal() == -1) {
@@ -85,11 +85,22 @@ int main( int cargs, char** argv ) {
         shell_cmd(testInput);
       }
       printf("--:> ");
-      if ( getline(&userin, &userin_len, stdin) != -1 ) {
-        printf("User entered: %s\n", userin);
-      }
-      else {
-        perror("User input too long or error reading from stdin ");
+
+      // Check if stdin is valid before calling getline()
+      int stdin_fd = fileno(stdin);
+      int flags = fcntl(stdin_fd, F_GETFD);
+      if (flags != -1) {
+        if ( getline(&userin, &userin_len, stdin) != -1 ) {
+          printf("User entered: %s\n", userin);
+        } else {
+          perror("User input too long or error reading from stdin ");
+          userin = NULL;
+          userin_len = 0;
+          continue;
+        }
+      } else {
+        perror("ERROR: stdin is not valid ");
+        break;
       }
     } while (strcmp(userin, "quit\n")); //this exit condition is temporary
   }

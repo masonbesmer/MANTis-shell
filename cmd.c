@@ -26,6 +26,47 @@ int shell_cmd(char **args){
         //INSERT alias FUNCTION CALL HERE
         return 0;
     }
+    else if (strcmp(args[0], "test") == 0){
+        printf("testing. we're about to fork\n");
+        pid_t pid;
+        pid = fork();
+        if (pid == 0){
+            // set child process group id to its own pid
+            setpgid(0, 0);
+
+            // respect signals in child
+            signal(SIGINT, SIG_DFL);
+            signal(SIGTSTP, SIG_DFL);
+
+            // temp code to not terminate until i tell it to
+            printf("just forked, this is the child talking\n");
+            for(int i = 0; i < 5; i++){
+                printf("child\n");
+                fflush(stdout);
+                sleep(1);
+            }
+
+            // exit child normally (it wont get here) (probably)
+            exit(0);
+        } else if (pid < 0){
+            // fork failed
+            perror("ERROR: fork failed");
+            return -1;
+        } else {
+            printf("place child in foreground, move parent to background\n");
+            tcsetpgrp(STDIN_FILENO, pid);
+
+            printf("wait for child to finish its stuff, then return to shell\n");
+            waitpid(pid, NULL, 0);
+
+            printf("place parent back in foreground after child is done\n");
+            tcsetpgrp(STDIN_FILENO, getpgid(0));
+            printf("child is done, parent is back in foreground, returning to shell\n");
+
+            // return back to shell loop
+            return 0;
+        }
+    }
 
     pid_t pid;
     pid = fork();
