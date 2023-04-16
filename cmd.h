@@ -13,7 +13,7 @@
 #include "string.h"
 #include "limits.h"
 
-char *current_working_directory;
+// char *current_working_directory;
 
 
 int shell_cmd(char **args);

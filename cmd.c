@@ -31,7 +31,7 @@ int shell_cmd(char **args){
     pid = fork();
     if(pid == 0){
         //add current working directory to environment variables
-        setenv("CWD",getcwd(current_working_directory,1024), 1);
+  //      setenv("CWD",getcwd(current_working_directory,1024), 1);
         //executes command and checks for errors
         if(execvp(args[0], args) == -1){
             perror("ERROR: exec failed");

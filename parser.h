@@ -12,8 +12,8 @@
 #include <string.h>
 #include <unistd.h>
 
-int get_args( char ** args_buff, char* user_in );
-int get_args_from_batch ( char ** args_buff, char * user_in );
-int parse_args( char ** args_buff, int num_args);
+int get_args( char* args_buff[], char* user_in );
+int get_args_from_batch ( char* args_buff[], char * user_in );
+int parse_args( char* args_buff[], int num_args);
 
 #endif
