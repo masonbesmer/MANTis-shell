@@ -1,7 +1,8 @@
 # Project Specific Files
 .shellpath
 newshell
-
+vgcore.*
+testfile.txt
 # Prerequisites
 *.d
 

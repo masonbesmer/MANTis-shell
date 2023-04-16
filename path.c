@@ -5,6 +5,7 @@
 // desc:    path built-in program source, allows user to change path env
 
 #include "path.h"
+#include "main.h"
 
 // In order to PATH modifications in path.c to remain persistent in the shell
 // parent process calling the built-in path program the path is written
@@ -20,17 +21,20 @@ char* get_pathenv(char* env_filename) {
   path = malloc(MAX_PATH_LENGTH);
 
   if ( path == NULL ) {
+    errno = ENOMEM;
     perror("ERROR: Failed to malloc path in get_path ");
     return path;
   }
 
   if ( (path_file = fopen(env_filename, READ_ONLY)) == NULL ) {
+    errno = ENOENT;
     perror("ERROR: Failed to open path_file ");
     free(path);
     return NULL;
   }
 
   if ( fgets(path, MAX_PATH_LENGTH, path_file) == NULL ) {
+    errno = EIO;
     perror("ERROR: Failed to read path from path_file" );
     fclose(path_file);
     free(path);
@@ -49,6 +53,7 @@ int set_pathenv(char* env_filename, char* new_path) {
 
   FILE* path_file;
   if ( (path_file = fopen(env_filename, TRUNC)) == NULL ) {
+    errno = ENOENT;
     perror("ERROR: Failed to open/create path_file ");
     return -1;
   }
@@ -58,10 +63,16 @@ int set_pathenv(char* env_filename, char* new_path) {
     return 0;
   }
   else {
+    errno = EIO;
     perror("ERROR: unsuccessful write to path_file ");
     fclose(path_file);
     return -1;
   }
+}
+
+// if path passed with no args, print the path
+void print_path() {
+  // TODO
 }
 
 // append string to path
