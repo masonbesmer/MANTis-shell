@@ -4,6 +4,7 @@
 // date:    04/09/2023
 // desc:    Command source file, launches a command in a child process
 #include "cmd.h"
+#include "handle_exit.h"
 
 
 int shell_cmd(char **args){
@@ -25,6 +26,8 @@ int shell_cmd(char **args){
     else if(strcmp(args[0], "alias") == 0){
         //INSERT alias FUNCTION CALL HERE
         return 0;
+    } else if(strcmp(args[0], "test") == 0){
+        return cmd_fork_template();
     }
 
     pid_t pid;

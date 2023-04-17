@@ -5,9 +5,14 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+//include for until loop
+
+#include "sys/wait.h"
 
 #define SIGSTP 20
 
-int handle_exit_signal();
+int setup_exit();
+void handle_exit(int);
+int cmd_fork_template();
 
 #endif

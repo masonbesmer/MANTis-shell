@@ -17,8 +17,8 @@ void print_help() {
 }
 
 int main( int cargs, char** argv ) {
-  if (handle_exit_signal() == -1) {
-    perror("ERROR: unable to handle exit signal ");
+  if (setup_exit() == -1) {
+    perror("ERROR: unable to setup signal handler. ");
     return 1;
   }
 
