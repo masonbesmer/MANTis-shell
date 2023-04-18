@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include "parser.h"
 
-int add_alias(char **args);
+int add_alias(char **iargs);
 int remove_alias(char *name);
 int clear_aliases();
 int list_aliases();

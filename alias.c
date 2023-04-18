@@ -1,30 +1,18 @@
 #include "alias.h"
 
-int add_alias(char **args) {
-    
-    char** args_buff = (char**) calloc(512, sizeof(char*));
-    char *alias_name = strtok(args[1], "=");
-
-    int num_args = get_args(args_buff, args);
-
-    for (int i = 0; i < num_args; i++) {
-        printf("args_buff[%d]: %s\n", i, args_buff[i]);
+int add_alias(char **iargs) {
+    char *alias = strtok(iargs[1], "="); // split the string at "="
+    char **command = (char**)malloc(sizeof(char*) * 100);
+    int i = 0;
+    char *token = strtok(NULL, "="); // get the part after "="
+    while (token != NULL) {
+        command[i] = token;
+        printf("command[%d]: %s\n", i, command[i]);
+        i++;
+        token = strtok(NULL, "=");
     }
-    return 0; //return to avoid segfault below for now
-    //print text between single quotes in args[]
-    char *start = strchr(args[2], '\'');
-    char *end = strrchr(args[2], '\'');
-    printf("start: %s\n", start);
-    printf("end: %s\n", end);
-    if (start && end) {
-        size_t len = end - start - 1;
-        char *alias_value = malloc(len + 1);
-        strncpy(alias_value, start + 1, len);
-        alias_value[len] = '\0';
-        printf("alias_value: %s\n", alias_value);
-    }
-
-    printf("Adding alias %s\n", alias_name);
+    printf("Alias: %s\n", alias);
+    printf("Command: %s\n", command[0]);
     return 0;
 }
 
