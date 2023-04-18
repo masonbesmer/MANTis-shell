@@ -93,7 +93,7 @@ int parse_args( char* args_buff[], int num_args) {
   int j_args;
   char* args[512];
   char delims[] = " \t\v\r\n";
-  enum exec_type mode = EXEC;
+  int mode = EXEC;
   // in a loop for each command to be processed
   // for each item in args_buffer, create an args[] and insert it into the array
   for ( int i = 0; i < num_args; i++ ) {

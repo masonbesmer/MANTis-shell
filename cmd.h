@@ -12,14 +12,8 @@
 #include "signal.h"
 #include "string.h"
 #include "limits.h"
+#include "parser.h"
 
-enum exec_type{
-    EXEC = 0,
-    PIPE = 1,
-    REDIRECT = 2,
-    BOTH = 3
-};
-
-int shell_cmd(char **args,enum exec_type mode);
+int shell_cmd(char **args, int mode);
 
 #endif
