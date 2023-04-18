@@ -1,7 +1,9 @@
 # Project Specific Files
 .shellpath
 newshell
-
+vgcore.*
+testfile.txt
+*.stackdump
 # Prerequisites
 *.d
 
@@ -55,5 +57,17 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-#vscode hidden files
-.vscode
+### VisualStudioCode ###
+.vscode/*
+*.code-workspace
+
+# Local History for Visual Studio Code
+.history/
+
+# Built Visual Studio Code Extensions
+*.vsix
+
+### VisualStudioCode Patch ###
+# Ignore all local history of files
+.history
+.ionide

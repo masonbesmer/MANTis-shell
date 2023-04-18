@@ -7,45 +7,43 @@
 #include "parser.h"
 #include "path.h"
 #include "main.h"
+#include "cmd.h"
 
-// Populate supplied unalloced argument buffer with commands and args
-// expects: empty argument buffer, userin from stdio or batchfile
-// returns integer number of entries in argument buffer, or -1 on error
-int get_args( char ** args_buff, char * userin ) {
+// Populate supplied allocated argument buffer with commands and args.
+// Expects: empty argument buffer, userin from stdio or batchfile.
+// Returns integer number of entries in argument buffer, or -1 on error.
+int get_args( char* args_buff[], char* userin ) {
 
-  args_buff = malloc(MAX_ARG_LEN * sizeof(char*));
-  if (args_buff == NULL ){
-    perror("EROR: Unable to malloc args_buff in get_args ");
-    return -1;
-  }
-
-  char* token;
+  char* token, *input;
+  input = (char*) malloc((strlen(userin) + 1) * sizeof(char));
   int index = 0;
-  token = strtok(userin, ";");
+  strcpy(input, userin);
+  token = strtok(input, ";");
 
   if ( token == NULL ) {
     printf("NOTE: User input has no tokenizable content.\n");
   }
 
   while ( token != NULL ) {
-    args_buff[index] = malloc((strlen(token) + 1));
-    if( args_buff == NULL ) {
+    args_buff[index] = (char*)malloc((strlen(token) + 1) * sizeof(char));
+    if( args_buff[index] == NULL ) {
       perror("ERROR: malloc failed in args_buffer in get_args ");
       return -1;
     }
-    args_buff[index] = token;
-    token = strtok(userin, ";");
+    strcpy(args_buff[index], token);
+    token = strtok(NULL, ";");
     index ++;
   }
   // This will return 0 if the user_args buffer is empty
   // and an index > 0 if it is not empty.
+  free(input);
   return index;
 }
 
-// read the args from a file into a supplied character buffer
-// expects an empty args buffer and a filename
-// returns integer number of entries in argument buffer, or -1 on error
-int get_args_from_batch( char ** args_buff, char * filename ) {
+// Read args from a batchfile into a supplied allocated character buffer.
+// Expects an empty args buffer reference and a filename.
+// Returns integer number of entries in argument buffer, or -1 on error.
+int get_args_from_batch( char * args_buff[], char * filename ) {
 
   // Open file for reading
   FILE* batchfile;
@@ -58,27 +56,21 @@ int get_args_from_batch( char ** args_buff, char * filename ) {
     return -1;
   }
 
-  args_buff = malloc(MAX_ARG_LEN * sizeof(char*));
-  if (args_buff == NULL ){
-    perror("ERROR: Unable to malloc args_buff in get_args ");
-    return -1;
-  }
-
   while ( (fgets(batch_buff, MAX_ARG_LEN, batchfile)) != NULL) {
 
-    token = strtok(batch_buff, ";");
+    token = strtok(batch_buff, "\n;");
     if ( token == NULL ) {
       printf("NOTE: User input has no tokenizable content.\n");
     }
 
    while ( token != NULL ) {
-      args_buff[index] = malloc((strlen(token) + 1));
-      if( args_buff == NULL ) {
+      args_buff[index] = (char*) malloc((strlen(token) + 1));
+      if( args_buff[index] == NULL ) {
         perror("ERROR: malloc failed in args_buffer in get_args ");
         return -1;
       }
-      args_buff[index] = token;
-      token = strtok(batch_buff, ";");
+      strcpy(args_buff[index], token);
+      token = strtok(NULL, ";");
       index ++;
     }
   }
@@ -92,13 +84,47 @@ int get_args_from_batch( char ** args_buff, char * filename ) {
   return index;
 }
 
-// PARSE arument bufer into an array of buffers of commands and args
-// to be processed by the shell.
-// Each line must be parsed down to command arg arg arg
-// must recognize redirect and pipe situations and call pipe/redir as needed
-// returns 0 on success, -1 on failure
-int parse_args( char ** args_buff, int num_args) {
-  //create a args array buffer (args[][])
-  //for each item in args_buffer, create an args[] and insert it into the array
+// Parse populated arument buffer into mult. arrays of exec args.
+// Then exec on each array sequentially. TODO Must handle exit() calls here.
+// Returns 0 on success, -1 on failure.
+int parse_args( char* args_buff[], int num_args) {
+  // create a args array buffer (args[][])
+  char* token;
+  int j_args;
+  char* args[512];
+  char delims[] = " \t\v\r\n";
+
+  // in a loop for each command to be processed
+  // for each item in args_buffer, create an args[] and insert it into the array
+  for ( int i = 0; i < num_args; i++ ) {
+
+    token = strtok(args_buff[i], delims);
+    // strtok returns NULL token if nothing is read before EOF
+    if ( token == NULL ) {
+      // this eats empty args
+      continue;
+    }
+
+    j_args = 0;
+
+    while ( token != NULL ) {
+      args[j_args] = token;
+      token = strtok(NULL, delims);
+      j_args++;
+    }
+
+    args[j_args] = (char*) NULL;
+
+    // TODO parse redirection and piping separately
+
+    if ( shell_cmd(args) == 1 ) {
+      perror("shell_cmd() failed to exec ");
+      for(int i = 0; i < j_args; i++) {
+        free(args[i]);
+      }
+      return -1;
+    }
+
+  }
   return 0;
 }

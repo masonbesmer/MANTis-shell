@@ -6,8 +6,8 @@
 
 #include "main.h"
 #include "path.h"
+#include "parser.h"
 #include "handle_exit.h"
-#include "cmd.h"
 
 void print_help() {
     printf(
@@ -16,12 +16,9 @@ void print_help() {
     );
 }
 
-int test = 0;
-char *testInput[] = {"top", NULL};
-
 int main( int cargs, char** argv ) {
-  if (handle_exit_signal() == -1) {
-    perror("ERROR: unable to handle exit signal ");
+  if (setup_exit() == -1) {
+    perror("ERROR: unable to setup signal handler. ");
     return 1;
   }
 
@@ -30,13 +27,17 @@ int main( int cargs, char** argv ) {
       "Welcome to MANTis, A Basic Interactive Shell Built for CSCE3600\n\n"
       );
 
-  size_t userin_len = MAX_ARG_LEN;
-  char* curr_dir = malloc(PATH_MAX); // PATH_MAX is a system defined macro
-  char* userin = malloc(MAX_ARG_LEN);
   char* pathenv;
+  int num_args;
+  size_t user_in_len = MAX_ARG_LEN;
+  // PATH_MAX is a system defined macro for the max filepath length.
+  char* curr_dir = (char*) calloc(PATH_MAX, sizeof(char));
+  char* user_in = (char*) calloc(MAX_ARG_LEN, sizeof(char));
+  char** args_buff = (char**) calloc(MAX_ARG_LEN, sizeof(char*));
 
-  if ( curr_dir == NULL || userin == NULL ) {
-    perror("ERROR: unable to malloc during shell init ");
+  if ( curr_dir == NULL || args_buff == NULL ) {
+    errno = ENOMEM;
+    perror("ERROR: unable to malloc during shell init.");
     return 1;
   }
 
@@ -76,31 +77,62 @@ int main( int cargs, char** argv ) {
   // interactive mode
   else if ( cargs == 1 ) {
 
-    printf("\nEnter \"quit\" to exit the shell. \n\n");
 
-    // TODO: Implement exit()
-    do {
-      if(test == 0){
-        test = 1;
-        shell_cmd(testInput);
+    // Interactive user input loop:
+    printf( "\nEnter \"quit\" to exit the shell. \n"
+            "--:> " );
+    if ( getline(&user_in, &user_in_len, stdin) == -1 ) {
+      perror("User input too long or error reading from stdin ");
+      return 1;
+    }
+
+    while ( strcmp(user_in, "quit\n") ) { // TODO this exit cond is temporary
+
+      if (args_buff == NULL ){
+        perror("ERROR: Unable to malloc args_buff in get_args ");
+        return 1;
       }
+
+      num_args = get_args(args_buff, user_in);
+      parse_args(args_buff, num_args);
+
+      for ( int i = 0; i < num_args; i++) {
+        free(args_buff[i]);
+      }
+
       printf("--:> ");
-      if ( getline(&userin, &userin_len, stdin) != -1 ) {
-        printf("User entered: %s\n", userin);
-      }
-      else {
+      if ( getline(&user_in, &user_in_len, stdin) == -1 ) {
         perror("User input too long or error reading from stdin ");
+        return 1;
       }
-    } while (strcmp(userin, "quit\n")); //this exit condition is temporary
+    }
   }
 
+
   // batch mode
-  else if ( cargs > 1 ) {
-    printf("Batch mode.\n");
+  else if ( cargs == 2 ) {
+    printf("Batch mode.\n\n");
+
+    if (args_buff == NULL ){
+      perror("ERROR: Unable to malloc args_buff in get_args ");
+      return 1;
+    }
+    num_args = get_args_from_batch(args_buff, argv[1]);
+
+    parse_args(args_buff, num_args);
+    for ( int i = 0; i < num_args; i++) {
+      free(args_buff[i]);
+    }
+  }
+  else if ( cargs > 2 || cargs < 1 ) {
+    errno = EINVAL;
+    perror("Incorrect number of arguments. ");
+    return 1;
   }
 
   free(curr_dir);
   free(pathenv);
-  free(userin);
+  free(args_buff);
+  free(user_in);
   return 0;
 }

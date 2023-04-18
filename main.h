@@ -14,6 +14,7 @@
 #include <string.h>
 #include <limits.h>
 #include <unistd.h>
+#include <errno.h>
 
 #define MAX_ARG_LEN     512
 
