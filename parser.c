@@ -93,7 +93,7 @@ int parse_args( char* args_buff[], int num_args) {
   int j_args;
   char* args[512];
   char delims[] = " \t\v\r\n";
-
+  enum exec_type mode = EXEC;
   // in a loop for each command to be processed
   // for each item in args_buffer, create an args[] and insert it into the array
   for ( int i = 0; i < num_args; i++ ) {
@@ -108,16 +108,99 @@ int parse_args( char* args_buff[], int num_args) {
     j_args = 0;
 
     while ( token != NULL ) {
-      args[j_args] = token;
+      // catch pipe and redirection in the args
+      switch ( mode ) {
+        case REDIR: {
+          if ( strstr(token, "|") != NULL )
+            mode = BOTH;
+
+          break;
+        }
+
+        case PIPE: {
+          if ( strstr(token, "<") != NULL || strstr(token, ">") != NULL)
+            mode = REDIR;
+
+          break;
+        }
+
+        case EXEC: {
+          // Set exec type for redirection
+          if ( strstr(token, "<") != NULL || strstr(token, ">") != NULL)
+            mode = REDIR;
+          // Set exec mode for piping
+          if ( strstr(token, "|") != NULL )
+            mode = PIPE;
+
+          break;
+        }
+        default: {}
+      }
+
+      // parse <, >, and | into a separate arg token
+      if ( mode != EXEC ) {
+        // if current argument contains a pipe, <, or > parge argument again
+        // into subtokens and add to args array
+        char* copy = NULL;
+        char subtoken[strlen(copy)+1];
+        int sublen = 0;
+        strcpy(copy, token);
+
+        for ( int i = 0; i < strlen(copy) - 1; i++) {
+          // terminate subtoken with null char and push to args arr
+          if ( sublen > 0 && copy[i] == '\0' ) {
+            subtoken[sublen] = '\0';
+            args[j_args] = subtoken;
+            j_args ++;
+            sublen = 0;
+          }
+
+          switch(copy[i]) {
+
+            case '<': case '>': case '|':
+            {
+              // if sublen > 0, terminate subtoken and add to arr
+              if ( sublen > 0 ) {
+                subtoken[sublen] = '\0';
+                args[j_args] = subtoken;
+                j_args ++;
+                sublen = 0;
+              }
+              subtoken[sublen] = copy[i];
+              subtoken[sublen+1] = '\0';
+              args[j_args] = subtoken;
+              j_args ++;
+
+              break;
+            }
+
+            default:
+            {
+              sublen ++;
+            }
+
+          }
+
+        }
+      }
+      else{
+        args[j_args] = token;
+        j_args++;
+      }
+
       token = strtok(NULL, delims);
-      j_args++;
     }
 
     args[j_args] = (char*) NULL;
 
-    // TODO parse redirection and piping separately
+    if ( mode == BOTH )
+      printf("Exec mode: BOTH");
+    else if ( mode != EXEC )
+      printf("Exec mode: %s\n",  (mode == PIPE)?"PIPE":"REDIR");
+    else
+     printf("Exec mode : EXEC");
 
-    if ( shell_cmd(args) == 1 ) {
+    if ( shell_cmd(args, mode) == 1 ) {
       perror("shell_cmd() failed to exec ");
       for(int i = 0; i < j_args; i++) {
         free(args[i]);

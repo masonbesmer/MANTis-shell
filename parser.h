@@ -12,6 +12,8 @@
 #include <string.h>
 #include <unistd.h>
 
+enum exec_type { EXEC = 0, PIPE = 1, REDIR = 2, BOTH = 3 };
+
 int get_args( char* args_buff[], char* user_in );
 int get_args_from_batch ( char* args_buff[], char * user_in );
 int parse_args( char* args_buff[], int num_args);
