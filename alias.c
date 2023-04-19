@@ -27,11 +27,18 @@ char **parse_alias(char **iargs) {
     //printf("alias_name: %s\n", alias_name);
     iargs[0] = alias_name;
     iargs[1] = cmd_arg_1;
+    // strncpy(iargs[0], alias_name, MAX_ALIAS_NAME_LEN - 1);
+    //strncpy(iargs[1], cmd_arg_1, MAX_ALIAS_LEN - 1);
 
     for (int i = 0; i < 100; i++) {
-        if (iargs[i+1] == NULL) {
-            iargs[i] = strtok(iargs[i], "\'"); //remove last ' from last argument
+        if (iargs[i] == NULL) {
+            //iargs[i] = strtok(iargs[i], "\'"); //remove last ' from last argument
+            //strncpy(iargs[i], strtok(NULL, "\'"), MAX_ALIAS_LEN - 1);
             break;
+        }
+        size_t len = strlen(iargs[i]);
+        if (len > 0 && iargs[i][len-1] == '\'') {
+            iargs[i][len-1] = '\0';
         }
     }
     // for (int i = 0; i < 100; i++) {
@@ -52,6 +59,7 @@ int store_alias(char **alias) {
     // }
     printf("Storing alias %s\n", alias[0]);
     strncpy(list[numAliases].name, alias[0], MAX_ALIAS_NAME_LEN - 1);
+    //strcpy(list[numAliases].name, alias[0]);
     if (alias[1] == NULL) {
         return -1;
     }
@@ -60,7 +68,8 @@ int store_alias(char **alias) {
         if (alias[i] == NULL) {
             break;
         }
-        list[numAliases].command[i-1] = alias[i];
+        list[numAliases].command[i-1] = malloc(MAX_ALIAS_LEN * sizeof(char));
+        strncpy(list[numAliases].command[i-1], alias[i], MAX_ALIAS_LEN - 1);
         printf("command stored: %s\n", list[numAliases].command[i-1]);
     }
     for (int i = 0; i < 100; i++) {
@@ -86,14 +95,15 @@ int clear_aliases() {
 
 int list_aliases() {
     printf("Listing all aliases\n");
+    //break here and test if null on command lsit
     for (int i = 0; i < numAliases; i++) {
         printf("%s: ", list[i].name);
         for (int i = 0; i < 100; i++) {
-            // if (list[numAliases].command[i] == NULL) {
-            //     break;
-            // }
+            if (list[numAliases].command[i] == NULL) {
+                break;
+            }
             printf("numAliases: %d\n", numAliases);
-            printf("command: %s", list[numAliases].command[i]);
+            printf("command: %s", list[numAliases-1].command[i]);
         }
     }
     return 0;
