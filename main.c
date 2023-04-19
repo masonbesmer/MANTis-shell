@@ -26,7 +26,7 @@ char* set_prompt() {
       perror("User input too long or error reading from stdin ");
       return NULL;
   }
-  if ( strcmp(prompt_in, "y\n") == 0 || strcmp(prompt_in, "\n") == 0 ) {
+  if ( strcmp(prompt_in, "y\n") == 0 ) {
     printf("Please enter your custom shell prompt\n(<= 10 chars): ");
     if ( getline(&prompt_in, &prompt_len, stdin) == -1 ) {
         perror("User input too long or error reading from stdin ");
@@ -38,6 +38,11 @@ char* set_prompt() {
       free(prompt_in);
       prompt_in = "-->";
     }
+
+  }
+  else {
+    free(prompt_in);
+    prompt_in = "-->";
   }
   prompt_in = strtok(prompt_in, "\n");
   return prompt_in;
