@@ -47,26 +47,8 @@ int shell_cmd(char **args, int mode){
             add_alias(args);
         }
         return 0;
-    }
-    else if(strcmp(args[0], "expan") == 0){
-        if (args[1] == NULL){
-            printf("No alias name given");
-            return -1;
-        }
-        char **expanded = expand_alias(args[1]);
-        if (expanded != NULL){
-            printf("Expanded alias: ");
-            for (int j = 0; j < 100; j++) {
-                if (expanded[j] == NULL) {
-                    break;
-                }
-                printf("%s ", expanded[j]);
-            }
-            return 0;
-        } else {
-            printf("Alias not found");
-            return -1;
-        }
+    } else if(strcmp(args[0], "test") == 0){
+        return cmd_fork_template();
     }
 
     pid_t pid;
