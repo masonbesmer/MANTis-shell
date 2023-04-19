@@ -43,9 +43,9 @@ char* execute_history(int history_num) {
 		return NULL;
 	}
 	else {
-		printf("Executing history command #%d: %s\n", history_num, history.commands[history_num - 1]); 
+		printf("Executing history command #%d: %s\n", history_num, history.commands[history_num + 1]);
 		//TODO:Implement your code to execute the command here
-		exe = history.commands[history_num - 1];
+		exe = history.commands[history_num + 1];
 		return exe;
 	}
 }
