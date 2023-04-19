@@ -11,12 +11,15 @@
 #include <stdio.h>
 
 #define MAX_PATH_LENGTH 512
-#define SHELL_PATH     ".shellpath"
+#define SHELL_PATH     "/.shellpath"
 #define READ_ONLY       "r"
 #define TRUNC           "w"
 #define APPEND          "a"
 
-char* get_pathenv(char* env_filename);
-int set_pathenv(char* env_filename, char* new_path);
+int print_path();
+int append_to_path(char* str);
+int remove_from_path(char* str);
+
+int shell_path(char* args[]);
 
 #endif
