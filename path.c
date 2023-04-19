@@ -7,82 +7,53 @@
 #include "path.h"
 #include "main.h"
 
-// In order to PATH modifications in path.c to remain persistent in the shell
-// parent process calling the built-in path program the path is written
-// to a file which the shell will update from when path returns
-// from execution successfully.
-
-// Retrieve PATH env from file passed by filename
-// Returns a char buffer on success, NULL on error.
-char* get_pathenv(char* env_filename) {
-
-  char* path;
-  FILE* path_file;
-  path = malloc(MAX_PATH_LENGTH);
-
-  if ( path == NULL ) {
-    errno = ENOMEM;
-    perror("ERROR: Failed to malloc path in get_path ");
-    return path;
-  }
-
-  if ( (path_file = fopen(env_filename, READ_ONLY)) == NULL ) {
-    errno = ENOENT;
-    perror("ERROR: Failed to open path_file ");
-    free(path);
-    return NULL;
-  }
-
-  if ( fgets(path, MAX_PATH_LENGTH, path_file) == NULL ) {
-    errno = EIO;
-    perror("ERROR: Failed to read path from path_file" );
-    fclose(path_file);
-    free(path);
-    return NULL;
-  }
-
-  fclose(path_file);
-  return path;
-}
-
-// Write passed PATH env to file passed by filename
-// proper usage is to read the current PATH, modify the string based on user in
-// and then call set_path to set the new path in the path_file file.
-// returns: 0 on success, -1 on error
-int set_pathenv(char* env_filename, char* new_path) {
-
-  FILE* path_file;
-  if ( (path_file = fopen(env_filename, TRUNC)) == NULL ) {
-    errno = ENOENT;
-    perror("ERROR: Failed to open/create path_file ");
-    return -1;
-  }
-
-  if ( fputs(new_path, path_file) != EOF ) {
-    fclose(path_file);
-    return 0;
-  }
-  else {
-    errno = EIO;
-    perror("ERROR: unsuccessful write to path_file ");
-    fclose(path_file);
-    return -1;
-  }
-}
-
 // if path passed with no args, print the path
-void print_path() {
-  // TODO
+int print_path() {
+  char* path;
+  if ( (path = getenv("PATH")) == NULL) {
+      perror("Unable to retrieve path.");
+      return -1;
+  }
+  printf("Current PATH is: %s", path);
+  return 0;
 }
 
 // append string to path
-int append_to_path(char* dirstr) {
+int append_to_path(char* str) {
 
   return 0;
 }
 
 // remove string from path
-int remove_from_path(char* dirstr) {
+int remove_from_path(char* str) {
+
+  return 0;
+}
+
+// The builtin path function for the shell.
+// No args, print path. arg="+string", add :string to path.
+// arg="-string", search for and remove ":string" from path.
+// Returns 0 for a successful call, -1 for an error.
+int shell_path(char* args[]) {
+  if ( args[0] == NULL || strcmp(args[0], "path") != 0 ) {
+    errno = EINVAL;
+    perror("ERROR: Invalid/no arguments passed by shell_cmd.");
+    return -1;
+  }
+
+  int num_args = 1;
+  while ( args[num_args] != NULL )
+    num_args++;
+
+  if ( num_args == 1 ) {
+    print_path();
+    return 0;
+  }
+  else if (num_args > 3) {
+    errno = EINVAL;
+    perror("ERROR: Too many arguments for path. ");
+    return -1;
+  }
 
   return 0;
 }

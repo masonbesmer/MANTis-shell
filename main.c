@@ -9,6 +9,7 @@
 #include "parser.h"
 #include "handle_exit.h"
 
+
 void print_help() {
     printf(
       "MANTis - an interactive shell by Mason, Alex, Nathan, and Tobi\n"
@@ -30,20 +31,21 @@ int main( int cargs, char** argv ) {
   char* pathenv;
   int num_args;
   size_t user_in_len = MAX_ARG_LEN;
+  char* shell_dir = (char*) calloc(PATH_MAX, sizeof(char));
+
   // PATH_MAX is a system defined macro for the max filepath length.
-  char* curr_dir = (char*) calloc(PATH_MAX, sizeof(char));
   char* user_in = (char*) calloc(MAX_ARG_LEN, sizeof(char));
   char** args_buff = (char**) calloc(MAX_ARG_LEN, sizeof(char*));
 
-  if ( curr_dir == NULL || args_buff == NULL ) {
+  if ( shell_dir == NULL || args_buff == NULL || user_in == NULL ) {
     errno = ENOMEM;
     perror("ERROR: unable to malloc during shell init.");
     return 1;
   }
 
-  //get current working directory
-  if ( getcwd(curr_dir, PATH_MAX) != NULL ) {
-    printf("Current directory is: %s\n", curr_dir);
+  //get current working directory so we always know where the PATH is
+  if ( getcwd(shell_dir, PATH_MAX) != NULL ) {
+    printf("Current directory is: %s\n", shell_dir);
   }
   else {
     perror("ERROR: getcwd failed ");
@@ -51,19 +53,8 @@ int main( int cargs, char** argv ) {
   }
 
   // store current system PATH in the ENV_PATH file
-  pathenv = getenv("PATH");
-  if ( pathenv == NULL ) {
-    perror("ERROR: no match for PATH in process environment ");
-    return 1;
-  }
-  if ( set_pathenv(SHELL_PATH, pathenv) == -1 ) {
-    perror("ERROR: failure to write to ENV_PATH ");
-    return 1;
-  }
-
-  // test path was written correctly by reading the path from file
-  if ( (pathenv = get_pathenv(SHELL_PATH)) == NULL ) {
-    perror("ERROR: failure to retreive from ENV_PATH");
+  if ( (pathenv = getenv("PATH")) == NULL ) {
+    perror("ERROR: cannot read PATH from env ");
     return 1;
   }
   printf("Current env PATH is: %s\n", pathenv);
@@ -76,7 +67,6 @@ int main( int cargs, char** argv ) {
 
   // interactive mode
   else if ( cargs == 1 ) {
-
 
     // Interactive user input loop:
     printf( "\nEnter \"quit\" to exit the shell. \n"
@@ -130,8 +120,7 @@ int main( int cargs, char** argv ) {
     return 1;
   }
 
-  free(curr_dir);
-  free(pathenv);
+  free(shell_dir);
   free(args_buff);
   free(user_in);
   return 0;
