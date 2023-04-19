@@ -43,7 +43,7 @@ int shell_cmd(char **args, int mode){
             remove_alias(args[2]);
         }
         else{
-            store_alias(args);
+            add_alias(args);
         }
         return 0;
     } else if(strcmp(args[0], "test") == 0){
