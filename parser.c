@@ -118,13 +118,14 @@ int parse_args( char* args_buff[], int num_args, bool* exit_flag) {
           mode = PIPE;
       }
         // after checking initial MODE, check for BOTH
-      if ( mode != BOTH && (mode == REDIR || mode == PIPE) ) {
-        if ( strstr(token, "<") != NULL || strstr(token, ">") != NULL)
-          mode = BOTH;
-        else if ( strstr(token, "|") != NULL )
+      if ( mode == REDIR ) {
+        if ( strstr(token, "|") != NULL )
           mode = BOTH;
       }
-
+      if ( mode == PIPE ) {
+        if ( strstr(token, "<") != NULL || strstr(token, ">") != NULL)
+          mode = BOTH;
+      }
       // parse <, >, and | into a separate arg token
       if ( mode != EXEC ) {
         // if current argument contains a pipe, <, or > parge argument again
