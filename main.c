@@ -11,13 +11,48 @@
 
 
 void print_help() {
-    printf(
+    printf( "\n"
       "MANTis - an interactive shell by Mason, Alex, Nathan, and Tobi\n"
       "Usage: newshell [batchfile]\n"
     );
 }
 
+char* set_prompt() {
+  char* prompt_in;
+  size_t prompt_len;
+  if (prompt_in == NULL) {
+    perror("Unable to malloc in set_prompt.");
+    return prompt_in;
+  }
+
+  printf("Would you like to set a custom shell prompt?\n[Default -->:] y/n: ");
+  if ( getline(&prompt_in, &prompt_len, stdin) == -1 ) {
+      perror("User input too long or error reading from stdin ");
+      return NULL;
+  }
+  if ( strcmp(prompt_in, "y\n") == 0 ) {
+    printf("Please enter your custom shell prompt\n(<= 10 chars): ");
+    if ( getline(&prompt_in, &prompt_len, stdin) == -1 ) {
+        perror("User input too long or error reading from stdin ");
+        return NULL;
+    }
+
+    else if ( strcmp(prompt_in, "\n") == 0 || strlen(prompt_in) > 11) {
+      printf("Prompt too long or empty. Setting default prompt.\n");
+      free(prompt_in);
+      prompt_in = "-->";
+    }
+  }
+  prompt_in = strtok(prompt_in, "\n");
+  return prompt_in;
+}
+
+void prompt(const char* prompt) {
+  printf("\n%s: ", prompt);
+}
+
 int main( int cargs, char** argv ) {
+
   if (setup_exit() == -1) {
     perror("ERROR: unable to setup signal handler. ");
     return 1;
@@ -25,10 +60,11 @@ int main( int cargs, char** argv ) {
 
   printf(
       // We should see if we can come up with a better name...
-      "Welcome to MANTis, A Basic Interactive Shell Built for CSCE3600\n\n"
+      "\nWelcome to MANTis, A Basic Interactive Shell Built for CSCE3600\n\n"
       );
 
-  char* pathenv;
+  char* cust_prompt = set_prompt();
+
   int num_args;
   size_t user_in_len = MAX_ARG_LEN;
   char* shell_dir = (char*) calloc(PATH_MAX, sizeof(char));
@@ -44,20 +80,10 @@ int main( int cargs, char** argv ) {
   }
 
   //get current working directory so we always know where the PATH is
-  if ( getcwd(shell_dir, PATH_MAX) != NULL ) {
-    printf("Current directory is: %s\n", shell_dir);
-  }
-  else {
+  if ( getcwd(shell_dir, PATH_MAX) == NULL ) {
     perror("ERROR: getcwd failed ");
     return 1;
   }
-
-  // store current system PATH in the ENV_PATH file
-  if ( (pathenv = getenv("PATH")) == NULL ) {
-    perror("ERROR: cannot read PATH from env ");
-    return 1;
-  }
-  printf("Current env PATH is: %s\n", pathenv);
 
   // usage/help statement
   if ( cargs == 2 && strcmp(argv[1], "-help") == 0 ) {
@@ -69,8 +95,10 @@ int main( int cargs, char** argv ) {
   else if ( cargs == 1 ) {
 
     // Interactive user input loop:
-    printf( "\nEnter \"quit\" to exit the shell. \n"
-            "--:> " );
+    printf(
+        "\nBegin interactive mode...\n"
+        "Enter \"quit\" to exit the shell. \n");
+    prompt(cust_prompt);
     if ( getline(&user_in, &user_in_len, stdin) == -1 ) {
       perror("User input too long or error reading from stdin ");
       return 1;
@@ -90,7 +118,7 @@ int main( int cargs, char** argv ) {
         free(args_buff[i]);
       }
 
-      printf("--:> ");
+      prompt(cust_prompt);
       if ( getline(&user_in, &user_in_len, stdin) == -1 ) {
         perror("User input too long or error reading from stdin ");
         return 1;
