@@ -8,6 +8,7 @@
 #include "handle_myhistory.h"
 #include "path.h"
 #include "alias.h"
+#include "main.h"
 
 int shell_cmd(char **args, int mode){
     if(strcmp(args[0], "cd") == 0){
@@ -25,7 +26,7 @@ int shell_cmd(char **args, int mode){
             clear_history();
         }
         else{
-            char* hist_cmd;
+            char hist_cmd[MAX_ARG_LEN];
             strcpy(hist_cmd, execute_history(atoi(args[1])));
             int num_args = get_args(args, hist_cmd);
             parse_args(args, num_args, false);
