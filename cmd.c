@@ -6,6 +6,8 @@
 #include "cmd.h"
 #include "handle_exit.h"
 #include "handle_myhistory.h"
+#include "path.h"
+#include "alias.h"
 
 int shell_cmd(char **args, int mode){
     if(strcmp(args[0], "cd") == 0){
@@ -13,13 +15,7 @@ int shell_cmd(char **args, int mode){
         return 0;
     }
     else if(strcmp(args[0], "path") == 0){
-        if(strcmp(args[1], "+") == 0){
-            append_to_path(args[2]);
-        }
-        else if(strcmp(args[1], "-") == 0){
-            remove_from_path(args[2]);
-        }
-        return 0;
+        return shell_path(args);
     }
     else if(strcmp(args[0], "myhistory") == 0){
         if(args[1] == NULL){
@@ -34,10 +30,22 @@ int shell_cmd(char **args, int mode){
         return 0;
     }
     else if(strcmp(args[0], "exit") == 0){
-        exit(0);
+        // Eats exit haha
+        return 0;
     }
     else if(strcmp(args[0], "alias") == 0){
-        //INSERT alias FUNCTION CALL HERE
+        if(args[1] == NULL){
+            list_aliases();
+        }
+        else if(strcmp(args[1], "-c") == 0){
+            clear_aliases();
+        }
+        else if(strcmp(args[1], "-r") == 0){
+            remove_alias(args[2]);
+        }
+        else{
+            add_alias(args);
+        }
         return 0;
     } else if(strcmp(args[0], "test") == 0){
         return cmd_fork_template();
@@ -48,7 +56,7 @@ int shell_cmd(char **args, int mode){
     if(pid == 0){
         //executes command and checks for errors
         if(execvp(args[0], args) == -1){
-            perror("ERROR: exec failed");
+            perror("Unable to execute");
             kill(getpid(), SIGTERM);
             return 1;
         }

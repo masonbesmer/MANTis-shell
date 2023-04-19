@@ -9,18 +9,12 @@
 #include "handle_myhistory.h"
 
 
-<<<<<<< Updated upstream
-//To store commands to the history.
-void add_to_history(char* command){
-	CommandHistory history; // a global variable to store command history
-=======
 
 CommandHistory history;// a global variable to store command history 
 
 
 //To store commands to the history.
 void add_to_history(char* command){
->>>>>>> Stashed changes
 
 	//To move commands in history the to make room for  new commands.
 	for(int i = MAX_HISTORY - 1; i > 0; i--) {
@@ -32,10 +26,6 @@ void add_to_history(char* command){
 
 //To clear the history.
 void clear_history() {
-<<<<<<< Updated upstream
-	CommandHistory history; // a global variable to store command history
-=======
->>>>>>> Stashed changes
 
 	history.count = 0;
 	for (int i = 0; i < MAX_HISTORY; i++) {
@@ -44,30 +34,29 @@ void clear_history() {
 }
 
 //To execute the history by its number.
-void execute_history(int history_num) {
-<<<<<<< Updated upstream
-CommandHistory history; // a global variable to store command history
-=======
->>>>>>> Stashed changes
+char* execute_history(int history_num) {
+
+	char* exe;
 
 	if(history_num <= 0 || history_num > history.count) {
 		printf("Invalid history command number\n");
+		return NULL;
 	}
 	else {
 		printf("Executing history command #%d: %s\n", history_num, history.commands[history_num - 1]); 
 		//TODO:Implement your code to execute the command here
+		exe = history.commands[history_num - 1];
+		return exe;
 	}
 }
 
 //To print all command history.
 void print_history() {
-<<<<<<< Updated upstream
-	CommandHistory history; // a global variable to store command history
-=======
->>>>>>> Stashed changes
 
 	printf("History of previous commans:\n");
 	for(int i = 0; i < history.count; i++) {
 		printf("%d: %s\n", i + 1, history.commands[i]);
 	}
 }
+
+
