@@ -5,24 +5,16 @@
 // desc:    Command source file, launches a command in a child process
 #include "cmd.h"
 #include "handle_exit.h"
+#include "handle_myhistory.h"
+#include "path.h"
 
-<<<<<<< HEAD
-int shell_cmd(char **args){
-=======
 int shell_cmd(char **args, int mode){
->>>>>>> master
     if(strcmp(args[0], "cd") == 0){
         handle_cd(args);
         return 0;
     }
     else if(strcmp(args[0], "path") == 0){
-        if(strcmp(args[1], "+") == 0){
-            append_to_path(args[2]);
-        }
-        else if(strcmp(args[1], "-") == 0){
-            remove_from_path(args[2]);
-        }
-        return 0;
+        return shell_path(args);
     }
     else if(strcmp(args[0], "myhistory") == 0){
         if(args[1] == NULL){
