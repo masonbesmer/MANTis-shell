@@ -11,6 +11,10 @@
 #include "main.h"
 
 int shell_cmd(char **args, int mode){
+    if(mode == REDIR){
+        printf("Redirection mode\n");
+        return redirection(args);
+    }
     if(strcmp(args[0], "cd") == 0){
         handle_cd(args);
         return 0;

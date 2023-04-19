@@ -16,10 +16,7 @@
 #include <sys/wait.h>
 #include <string.h>
 
-void redir_stdout(char *filename);
-void redir_stdin(char *filename);
-
-
+int redirection(char **args);
 
 
 #endif
