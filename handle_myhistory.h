@@ -26,6 +26,6 @@ typedef struct {
 void add_to_history(char* command);
 void clear_history();
 void print_history();
-void execute_history(int history_num);
+char* execute_history(int history_num);
 
 #endif
