@@ -8,7 +8,7 @@
 #include "path.h"
 #include "parser.h"
 #include "handle_exit.h"
-
+#include <ctype.h>
 
 void print_help() {
     printf( "\n"
@@ -17,35 +17,42 @@ void print_help() {
     );
 }
 
-char* set_prompt() {
-  char* prompt_in;
-  size_t prompt_len;
+// mallocs an uninitialized char* and sets it to a custom prompt
+char* set_prompt(char * prompt) {
+  prompt = (char*)malloc(sizeof(char)*11);
+  size_t prompt_len = sizeof(char)*11;
+
+  if ( prompt == NULL ) {
+    perror("ERROR: Unable to malloc prompt vars in set_prompt. " );
+    return NULL;
+  }
 
   printf("Would you like to set a custom shell prompt?\n[Default -->:] Y/n: ");
-  if ( getline(&prompt_in, &prompt_len, stdin) == -1 ) {
+  if ( getline(&prompt, &prompt_len, stdin) == -1 ) {
       perror("User input too long or error reading from stdin ");
       return NULL;
   }
-  if ( strcmp(prompt_in, "y\n") == 0 ) {
+  for ( int i=0; i < strlen(prompt); i++ )
+    prompt[i] = tolower(prompt[i]);
+
+  if ( strcmp(prompt, "y\n") == 0 ) {
     printf("Please enter your custom shell prompt\n(<= 10 chars): ");
-    if ( getline(&prompt_in, &prompt_len, stdin) == -1 ) {
+    if ( getline(&prompt, &prompt_len, stdin) == -1 ) {
         perror("User input too long or error reading from stdin ");
         return NULL;
     }
 
-    else if ( strcmp(prompt_in, "\n") == 0 || strlen(prompt_in) > 11) {
+    else if ( strcmp(prompt, "\n") == 0 || strlen(prompt) > 11) {
       printf("Prompt too long or empty. Setting default prompt.\n");
-      free(prompt_in);
-      prompt_in = "-->";
+      strcpy(prompt, "-->");
     }
 
   }
   else {
-    free(prompt_in);
-    prompt_in = "-->";
+    strcpy(prompt, "-->");
   }
-  prompt_in = strtok(prompt_in, "\n");
-  return prompt_in;
+  prompt = strtok(prompt, "\n");
+  return prompt;
 }
 
 void prompt(const char* prompt) {
@@ -53,6 +60,16 @@ void prompt(const char* prompt) {
 }
 
 int main( int cargs, char** argv ) {
+
+  int num_args;
+  char* cust_prompt;
+  bool exit_flag = false;
+  size_t user_in_len = MAX_ARG_LEN;
+  char* shell_dir = (char*) calloc(PATH_MAX, sizeof(char));
+
+  // PATH_MAX is a system defined macro for the max filepath length.
+  char* user_in = (char*) calloc(MAX_ARG_LEN, sizeof(char));
+  char** args_buff = (char**) calloc(MAX_ARG_LEN, sizeof(char*));
 
   if (setup_exit() == -1) {
     perror("ERROR: unable to setup signal handler. ");
@@ -63,16 +80,6 @@ int main( int cargs, char** argv ) {
       // We should see if we can come up with a better name...
       "\nWelcome to MANTis, A Basic Interactive Shell Built for CSCE3600\n\n"
       );
-
-  char* cust_prompt = set_prompt();
-
-  int num_args;
-  size_t user_in_len = MAX_ARG_LEN;
-  char* shell_dir = (char*) calloc(PATH_MAX, sizeof(char));
-
-  // PATH_MAX is a system defined macro for the max filepath length.
-  char* user_in = (char*) calloc(MAX_ARG_LEN, sizeof(char));
-  char** args_buff = (char**) calloc(MAX_ARG_LEN, sizeof(char*));
 
   if ( shell_dir == NULL || args_buff == NULL || user_in == NULL ) {
     errno = ENOMEM;
@@ -95,17 +102,18 @@ int main( int cargs, char** argv ) {
   // interactive mode
   else if ( cargs == 1 ) {
 
+    cust_prompt = set_prompt(cust_prompt);
     // Interactive user input loop:
     printf(
         "\nBegin interactive mode...\n"
-        "Enter \"quit\" to exit the shell. \n");
+        "Enter \"exit\" to exit the shell. \n");
     prompt(cust_prompt);
     if ( getline(&user_in, &user_in_len, stdin) == -1 ) {
       perror("User input too long or error reading from stdin ");
       return 1;
     }
 
-    while ( strcmp(user_in, "quit\n") ) { // TODO this exit cond is temporary
+    while ( true ) {
 
       if (args_buff == NULL ){
         perror("ERROR: Unable to malloc args_buff in get_args ");
@@ -113,10 +121,14 @@ int main( int cargs, char** argv ) {
       }
 
       num_args = get_args(args_buff, user_in);
-      parse_args(args_buff, num_args);
+      parse_args(args_buff, num_args, &exit_flag);
 
       for ( int i = 0; i < num_args; i++) {
         free(args_buff[i]);
+      }
+
+      if (exit_flag) {
+        break;
       }
 
       prompt(cust_prompt);
@@ -127,21 +139,29 @@ int main( int cargs, char** argv ) {
     }
   }
 
-
   // batch mode
   else if ( cargs == 2 ) {
+    char* line = (char*)malloc(MAX_ARG_LEN*sizeof(char));
     printf("Batch mode.\n\n");
 
     if (args_buff == NULL ){
       perror("ERROR: Unable to malloc args_buff in get_args ");
       return 1;
     }
+
     num_args = get_args_from_batch(args_buff, argv[1]);
 
-    parse_args(args_buff, num_args);
-    for ( int i = 0; i < num_args; i++) {
+    for( int i = 0; i < num_args; i++) {
+      strcpy(line, args_buff[i]);
+      parse_args(args_buff, num_args, &exit_flag);
+      if (exit_flag)
+        break;
+    }
+    for (int i = 0; i < num_args; i++) {
       free(args_buff[i]);
     }
+    if (line != NULL)
+      free(line);
   }
   else if ( cargs > 2 || cargs < 1 ) {
     errno = EINVAL;
@@ -149,6 +169,7 @@ int main( int cargs, char** argv ) {
     return 1;
   }
 
+  free(cust_prompt);
   free(shell_dir);
   free(args_buff);
   free(user_in);

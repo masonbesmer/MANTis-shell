@@ -2,7 +2,7 @@
 // parser.c
 // author:  Nathan Jodoin
 // date:    10APR23
-// desc:    user command args parsing functionality
+// desc:    user command args parsing functionality, also handles exit builtin
 
 #include "parser.h"
 #include "path.h"
@@ -87,7 +87,7 @@ int get_args_from_batch( char * args_buff[], char * filename ) {
 // Parse populated arument buffer into mult. arrays of exec args.
 // Then exec on each array sequentially. TODO Must handle exit() calls here.
 // Returns 0 on success, -1 on failure.
-int parse_args( char* args_buff[], int num_args) {
+int parse_args( char* args_buff[], int num_args, bool* exit_flag) {
   // create a args array buffer (args[][])
   char* token;
   int j_args;
@@ -180,6 +180,10 @@ int parse_args( char* args_buff[], int num_args) {
     }
 
     args[j_args] = (char*) NULL;
+
+    if ( strcmp(args[0], "exit") == 0 ) {
+      *exit_flag = true;
+    }
 
     // Exec commands
     if ( shell_cmd(args, mode) == 1 ) {
