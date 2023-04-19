@@ -15,6 +15,7 @@
 #include "parser.h"
 #include "handle_cd.h"
 #include "path.h"
+#include "redir.h"
 
 int shell_cmd(char **args, int mode);
 
