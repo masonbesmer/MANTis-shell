@@ -19,6 +19,13 @@ int handle_cd(char *args[]) {
         return 1;
     }
 
+    // If we write 'cd ..', then go to the parent directory
+    if(strcmp(args[1], "..") == 0){
+        chdir("..");
+        printf("%s\n",getcwd(s, 100));//to check the current directory
+        return 1;
+    }
+
 // Else we change the directory to the one specified by the argument, if possible
     else{
 
