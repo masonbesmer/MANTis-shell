@@ -23,7 +23,7 @@ typedef struct {
 } CommandHistory;
 
 
-void add_to_history(const char* command);
+void add_to_history(char* command);
 void clear_history();
 void print_history();
 

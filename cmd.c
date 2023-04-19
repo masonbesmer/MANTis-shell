@@ -6,7 +6,6 @@
 #include "cmd.h"
 #include "handle_exit.h"
 
-
 int shell_cmd(char **args){
     if(strcmp(args[0], "cd") == 0){
         //INSERT CD FUNCTION CALL HERE
