@@ -8,7 +8,7 @@
 #include "alias.h"
 
 
-int shell_cmd(char **args){
+int shell_cmd(char **args, int mode){
     if(strcmp(args[0], "cd") == 0){
         //INSERT CD FUNCTION CALL HERE
         return 0;
@@ -49,8 +49,6 @@ int shell_cmd(char **args){
     pid_t pid;
     pid = fork();
     if(pid == 0){
-        //add current working directory to environment variables
-  //      setenv("CWD",getcwd(current_working_directory,1024), 1);
         //executes command and checks for errors
         if(execvp(args[0], args) == -1){
             perror("ERROR: exec failed");
@@ -62,6 +60,12 @@ int shell_cmd(char **args){
         //error forking
         perror("ERROR: fork failed");
         return 1;
+    }
+    else{
+        int status;
+        //waits for child process to finish
+        waitpid(pid, &status, 0);
+        return 0;
     }
     return 0;
 }

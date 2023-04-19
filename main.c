@@ -86,8 +86,7 @@ int main( int cargs, char** argv ) {
       return 1;
     }
 
-    while ( strcmp(user_in, "quit\n") ) { // TODO this exit condition is temporary
-      printf("User entered: %s\n", user_in);
+    while ( strcmp(user_in, "quit\n") ) { // TODO this exit cond is temporary
 
       if (args_buff == NULL ){
         perror("ERROR: Unable to malloc args_buff in get_args ");
@@ -95,11 +94,6 @@ int main( int cargs, char** argv ) {
       }
 
       num_args = get_args(args_buff, user_in);
-
-      for ( int i = 0; i < num_args; i++ ) {
-        printf("Arg #%d: %s\n", i, args_buff[i]);
-      }
-
       parse_args(args_buff, num_args);
 
       for ( int i = 0; i < num_args; i++) {
