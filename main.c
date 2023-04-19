@@ -20,10 +20,6 @@ void print_help() {
 char* set_prompt() {
   char* prompt_in;
   size_t prompt_len;
-  if (prompt_in == NULL) {
-    perror("Unable to malloc in set_prompt.");
-    return prompt_in;
-  }
 
   printf("Would you like to set a custom shell prompt?\n[Default -->:] y/n: ");
   if ( getline(&prompt_in, &prompt_len, stdin) == -1 ) {
