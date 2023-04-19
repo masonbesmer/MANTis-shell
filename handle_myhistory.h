@@ -11,7 +11,7 @@
 
 #ifndef HANDLE_MYHISTORY_H
 #define HANDLE_MYHISTORY_H
-#define MAX_HISTORY 20
+#define MAX_HISTORY 21
 #define MAX_COMMAND_LENGTH 256
 
 
@@ -26,6 +26,6 @@ typedef struct {
 void add_to_history(char* command);
 void clear_history();
 void print_history();
-void execute_history(int history_num);
+char* execute_history(int history_num);
 
 #endif

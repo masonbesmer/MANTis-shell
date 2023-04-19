@@ -9,6 +9,7 @@
 #include "parser.h"
 #include "handle_exit.h"
 #include <ctype.h>
+#include "handle_myhistory.h"
 
 void print_help() {
     printf( "\n"
@@ -27,8 +28,7 @@ char* set_prompt(char * prompt) {
     return NULL;
   }
 
-  printf("Would you like to set a custom shell prompt?\n"
-      "[Default -->:] (Y/n): ");
+  printf("Would you like to set a custom shell prompt?\n[Default -->:] Y/n: ");
   if ( getline(&prompt, &prompt_len, stdin) == -1 ) {
       perror("User input too long or error reading from stdin ");
       return NULL;
@@ -36,18 +36,19 @@ char* set_prompt(char * prompt) {
   for ( int i=0; i < strlen(prompt); i++ )
     prompt[i] = tolower(prompt[i]);
 
-  if ( strcmp(prompt, "y\n") == 0 || strcmp(prompt, "\n") == 0 ) {
+  if ( strcmp(prompt, "y\n") == 0 ) {
     printf("Please enter your custom shell prompt\n(<= 10 chars): ");
     if ( getline(&prompt, &prompt_len, stdin) == -1 ) {
         perror("User input too long or error reading from stdin ");
         return NULL;
     }
-  }
-  else if ( strlen(prompt) > 11) {
-    printf("Prompt too long or empty. Setting default prompt.\n");
-    strcpy(prompt, "-->");
-  }
 
+    else if ( strcmp(prompt, "\n") == 0 || strlen(prompt) > 11) {
+      printf("Prompt too long or empty. Setting default prompt.\n");
+      strcpy(prompt, "-->");
+    }
+
+  }
   else {
     strcpy(prompt, "-->");
   }
@@ -131,6 +132,7 @@ int main( int cargs, char** argv ) {
         break;
       }
 
+      add_to_history(user_in);
       prompt(cust_prompt);
       if ( getline(&user_in, &user_in_len, stdin) == -1 ) {
         perror("User input too long or error reading from stdin ");
