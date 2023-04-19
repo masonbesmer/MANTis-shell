@@ -118,7 +118,7 @@ int parse_args( char* args_buff[], int num_args) {
           mode = PIPE;
       }
         // after checking initial MODE, check for BOTH
-      if ( mode != BOTH && mode == REDIR || mode == PIPE ) {
+      if ( mode != BOTH && (mode == REDIR || mode == PIPE) ) {
         if ( strstr(token, "<") != NULL || strstr(token, ">") != NULL)
           mode = BOTH;
         else if ( strstr(token, "|") != NULL )
