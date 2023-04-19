@@ -13,6 +13,8 @@
 #include "string.h"
 #include "limits.h"
 #include "parser.h"
+#include "handle_cd.h"
+#include "path.h"
 
 int shell_cmd(char **args, int mode);
 
