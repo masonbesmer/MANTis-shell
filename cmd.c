@@ -7,6 +7,7 @@
 #include "handle_exit.h"
 #include "handle_myhistory.h"
 #include "path.h"
+#include "alias.h"
 
 int shell_cmd(char **args, int mode){
     if(strcmp(args[0], "cd") == 0){
@@ -32,7 +33,18 @@ int shell_cmd(char **args, int mode){
         exit(0);
     }
     else if(strcmp(args[0], "alias") == 0){
-        //INSERT alias FUNCTION CALL HERE
+        if(args[1] == NULL){
+            list_aliases();
+        }
+        else if(strcmp(args[1], "-c") == 0){
+            clear_aliases();
+        }
+        else if(strcmp(args[1], "-r") == 0){
+            remove_alias(args[2]);
+        }
+        else{
+            store_alias(args);
+        }
         return 0;
     } else if(strcmp(args[0], "test") == 0){
         return cmd_fork_template();

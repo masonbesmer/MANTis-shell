@@ -1,6 +1,18 @@
 #include "alias.h"
 
+struct Alias_List list[MAX_ENTRIES];
+int numAliases = 0;
+
 int add_alias(char **iargs) {
+    if (store_alias(parse_alias(iargs)) != 0) {
+        perror("parse/store_alias() failed");
+        return -1;
+    }
+    printf("Adding alias %s\n", iargs[0]);
+    return 0;
+}
+
+char **parse_alias(char **iargs) {
     //print all of iargs
     for (int i = 0; i < 100; i++) {
         if (iargs[i] == NULL) {
@@ -20,37 +32,30 @@ int add_alias(char **iargs) {
             break;
         }
     }
-    //copy iargs to alias_def
-    char **alias_def = (char**)malloc(sizeof(char*) * 100);
-    for (int i = 0; i < 100; i++) {
-        if (iargs[i] == NULL) {
-            break;
-        }
-        alias_def[i] = iargs[i];
-    }
-    //shift alias_def to the left by 1 and remove the first element and store in iargs
-    // for (int i = 0; i < 100; i++) {
-    //     if (alias_def[i+1] == NULL) {
-    //         break;
-    //     }
-    //     iargs[i] = alias_def[i+1];
-    // }
-    for (int i = 0; i < 100; i++) {
-        if (alias_def[i] == NULL) {
-            //printf("alias_def[%d] is NULL\n", i);
-            break;
-        }
-        printf("arr to store for alias def = alias_def[%d]: %s\n", i, alias_def[i]);
-    }
-    printf("gets here?\n");
     for (int i = 0; i < 100; i++) {
         if (iargs[i] == NULL) {
             //printf("iargs[%d] is NULL", i);
             break;
         }
-        printf("arr to pass to exec = iargs[%d]: %s\n", i, iargs[i]);
+        //printf("arr to pass to store = iargs[%d]: %s\n", i, iargs[i]);
     }
-    printf("return");
+    return iargs;
+}
+
+int store_alias(char **alias) {
+    printf("Storing alias %s\n", alias[0]);
+    strncpy(list[numAliases].name, alias[0], MAX_ALIAS_NAME_LEN - 1);
+    printf("name stored");
+    if (alias[1] == NULL) {
+        return -1;
+    }
+    for (int i = 1; i < 100; i++) {
+        if (alias[i] == NULL) {
+            break;
+        }
+        list[numAliases].command[i] = &alias[i];
+    }
+    numAliases++;
     return 0;
 }
 
@@ -66,5 +71,8 @@ int clear_aliases() {
 
 int list_aliases() {
     printf("Listing all aliases\n");
+    for (int i = 0; i < numAliases; i++) {
+        printf("%s: %s\n", list[i].name, list[i].command);
+    }
     return 0;
 }
