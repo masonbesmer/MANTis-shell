@@ -14,7 +14,7 @@ int print_path() {
       perror("Unable to retrieve path.");
       return -1;
   }
-  printf("Current PATH is: %s", path);
+  printf("Current PATH is: %s\n", path);
   return 0;
 }
 
