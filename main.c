@@ -21,12 +21,12 @@ char* set_prompt() {
   char* prompt_in;
   size_t prompt_len;
 
-  printf("Would you like to set a custom shell prompt?\n[Default -->:] y/n: ");
+  printf("Would you like to set a custom shell prompt?\n[Default -->:] Y/n: ");
   if ( getline(&prompt_in, &prompt_len, stdin) == -1 ) {
       perror("User input too long or error reading from stdin ");
       return NULL;
   }
-  if ( strcmp(prompt_in, "y\n") == 0 ) {
+  if ( strcmp(prompt_in, "y\n") == 0 || strcmp(prompt_in, "\n") == 0 ) {
     printf("Please enter your custom shell prompt\n(<= 10 chars): ");
     if ( getline(&prompt_in, &prompt_len, stdin) == -1 ) {
         perror("User input too long or error reading from stdin ");
