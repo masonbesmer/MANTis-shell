@@ -133,8 +133,7 @@ int parse_args( char* args_buff[], int num_args) {
         int sublen = 0;
 
         for (int n = 0; n < strlen(token) + 1; n++) {
-          printf("token[n=%d]: %c\n", n, token[n]);
-          // end of token
+          // end of subtoken
           if ( sublen > 0 && token[n] == '\0' ) {
             subtoken[sublen] = '\0';
             args[j_args] = (char*)malloc((strlen(subtoken)+1)*sizeof(char));
