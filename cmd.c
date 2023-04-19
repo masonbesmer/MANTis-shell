@@ -6,17 +6,34 @@
 #include "cmd.h"
 #include "handle_exit.h"
 
+<<<<<<< HEAD
 int shell_cmd(char **args){
+=======
+int shell_cmd(char **args, int mode){
+>>>>>>> master
     if(strcmp(args[0], "cd") == 0){
-        //INSERT CD FUNCTION CALL HERE
+        handle_cd(args);
         return 0;
     }
     else if(strcmp(args[0], "path") == 0){
-        //INSERT path FUNCTION CALL HERE
+        if(strcmp(args[1], "+") == 0){
+            append_to_path(args[2]);
+        }
+        else if(strcmp(args[1], "-") == 0){
+            remove_from_path(args[2]);
+        }
         return 0;
     }
     else if(strcmp(args[0], "myhistory") == 0){
-        //INSERT myhistory FUNCTION CALL HERE
+        if(args[1] == NULL){
+            print_history();
+        }
+        else if(strcmp(args[1], "-c") == 0){
+            clear_history();
+        }
+        else{
+            execute_history(atoi(args[1]));
+        }
         return 0;
     }
     else if(strcmp(args[0], "exit") == 0){
@@ -32,8 +49,6 @@ int shell_cmd(char **args){
     pid_t pid;
     pid = fork();
     if(pid == 0){
-        //add current working directory to environment variables
-  //      setenv("CWD",getcwd(current_working_directory,1024), 1);
         //executes command and checks for errors
         if(execvp(args[0], args) == -1){
             perror("ERROR: exec failed");
@@ -45,6 +60,12 @@ int shell_cmd(char **args){
         //error forking
         perror("ERROR: fork failed");
         return 1;
+    }
+    else{
+        int status;
+        //waits for child process to finish
+        waitpid(pid, &status, 0);
+        return 0;
     }
     return 0;
 }

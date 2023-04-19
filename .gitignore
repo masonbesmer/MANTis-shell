@@ -3,6 +3,7 @@
 newshell
 vgcore.*
 testfile.txt
+*.stackdump
 # Prerequisites
 *.d
 

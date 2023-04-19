@@ -93,7 +93,7 @@ int parse_args( char* args_buff[], int num_args) {
   int j_args;
   char* args[512];
   char delims[] = " \t\v\r\n";
-
+  int mode = EXEC;
   // in a loop for each command to be processed
   // for each item in args_buffer, create an args[] and insert it into the array
   for ( int i = 0; i < num_args; i++ ) {
@@ -108,23 +108,89 @@ int parse_args( char* args_buff[], int num_args) {
     j_args = 0;
 
     while ( token != NULL ) {
-      args[j_args] = token;
+      // catch pipe and redirection in the args
+      if ( mode == EXEC ) {
+        // Set exec type for redirection
+        if ( strstr(token, "<") != NULL || strstr(token, ">") != NULL)
+          mode = REDIR;
+        // Set exec mode for piping
+        else if ( strstr(token, "|") != NULL )
+          mode = PIPE;
+      }
+        // after checking initial MODE, check for BOTH
+      if ( mode != BOTH && (mode == REDIR || mode == PIPE) ) {
+        if ( strstr(token, "<") != NULL || strstr(token, ">") != NULL)
+          mode = BOTH;
+        else if ( strstr(token, "|") != NULL )
+          mode = BOTH;
+      }
+
+      // parse <, >, and | into a separate arg token
+      if ( mode != EXEC ) {
+        // if current argument contains a pipe, <, or > parge argument again
+        // into subtokens and add to args array
+        char* subtoken = malloc( (strlen(token) + 1) * sizeof(char) );
+        int sublen = 0;
+
+        for (int n = 0; n < strlen(token) + 1; n++) {
+          printf("token[n=%d]: %c\n", n, token[n]);
+          // end of token
+          if ( sublen > 0 && token[n] == '\0' ) {
+            subtoken[sublen] = '\0';
+            args[j_args] = (char*)malloc((strlen(subtoken)+1)*sizeof(char));
+            strcpy(args[j_args], subtoken);
+            j_args++;
+            sublen = 0;
+          }
+
+          switch(token[n]) {
+            case '<': case '>': case '|':
+            { // if sublen > 0, terminate subtoken and add to arr
+              if ( sublen > 0 ) {
+                subtoken[sublen] = '\0';
+                args[j_args] = (char*)malloc((strlen(subtoken)+1)*sizeof(char));
+                strcpy(args[j_args], subtoken);
+                j_args ++;
+                sublen = 0;
+              }
+              // add > , <, or | as a token
+              subtoken[0] = token[n];
+              subtoken[1] = '\0';
+              args[j_args] = (char*)malloc((strlen(subtoken)+1)*sizeof(char));
+              strcpy(args[j_args], subtoken);
+              j_args++;
+
+              break;
+            }
+            default: // append any other character to the argument
+            {
+              subtoken[sublen] = token[n];
+              sublen ++;
+            }
+          }
+        }
+        free(subtoken);
+      }
+      else{
+        args[j_args] = (char*)malloc((strlen(token)+1)*sizeof(char));
+        strcpy(args[j_args], token);
+        j_args++;
+      }
+
       token = strtok(NULL, delims);
-      j_args++;
     }
 
     args[j_args] = (char*) NULL;
 
-    // TODO parse redirection and piping separately
-
-    if ( shell_cmd(args) == 1 ) {
+    // Exec commands
+    if ( shell_cmd(args, mode) == 1 ) {
       perror("shell_cmd() failed to exec ");
-      for(int i = 0; i < j_args; i++) {
-        free(args[i]);
-      }
       return -1;
     }
 
+    // memory cleanup
+    for(int i = 0; i < j_args; i++)
+      free(args[i]);
   }
   return 0;
 }

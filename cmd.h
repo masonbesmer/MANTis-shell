@@ -12,10 +12,10 @@
 #include "signal.h"
 #include "string.h"
 #include "limits.h"
+#include "parser.h"
+#include "handle_cd.h"
+#include "path.h"
 
-// char *current_working_directory;
-
-
-int shell_cmd(char **args);
+int shell_cmd(char **args, int mode);
 
 #endif
