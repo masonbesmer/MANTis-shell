@@ -5,12 +5,9 @@
 // desc:    Command source file, launches a command in a child process
 #include "cmd.h"
 #include "handle_exit.h"
+#include "handle_myhistory.h"
 
-<<<<<<< HEAD
-int shell_cmd(char **args){
-=======
 int shell_cmd(char **args, int mode){
->>>>>>> master
     if(strcmp(args[0], "cd") == 0){
         handle_cd(args);
         return 0;
