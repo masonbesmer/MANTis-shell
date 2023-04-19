@@ -30,7 +30,8 @@ int shell_cmd(char **args, int mode){
         return 0;
     }
     else if(strcmp(args[0], "exit") == 0){
-        exit(0);
+        // Eats exit haha
+        return 0;
     }
     else if(strcmp(args[0], "alias") == 0){
         if(args[1] == NULL){
@@ -55,7 +56,7 @@ int shell_cmd(char **args, int mode){
     if(pid == 0){
         //executes command and checks for errors
         if(execvp(args[0], args) == -1){
-            perror("ERROR: exec failed");
+            perror("Unable to execute");
             kill(getpid(), SIGTERM);
             return 1;
         }

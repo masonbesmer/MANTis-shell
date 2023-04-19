@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 #ifndef EXEC
 #define EXEC 0
@@ -30,6 +31,6 @@
 
 int get_args( char* args_buff[], char* user_in );
 int get_args_from_batch ( char* args_buff[], char * user_in );
-int parse_args( char* args_buff[], int num_args);
+int parse_args( char* args_buff[], int num_args, bool* exit_flag);
 
 #endif
