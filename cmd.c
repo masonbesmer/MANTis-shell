@@ -25,7 +25,10 @@ int shell_cmd(char **args, int mode){
             clear_history();
         }
         else{
-            execute_history(atoi(args[1]));
+            char* hist_cmd;
+            strcpy(hist_cmd, execute_history(atoi(args[1])));
+            int num_args = get_args(args, hist_cmd);
+            parse_args(args, num_args, false);
         }
         return 0;
     }
