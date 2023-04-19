@@ -12,7 +12,7 @@
 
 struct Alias_List {
     char name[MAX_ALIAS_NAME_LEN];
-    char **command[MAX_ALIAS_LEN];
+    char *command[MAX_ALIAS_LEN];
 };
 
 int add_alias(char **iargs);
