@@ -8,6 +8,11 @@
 #include "path.h"
 #include "parser.h"
 #include "handle_exit.h"
+<<<<<<< Updated upstream
+=======
+#include <ctype.h>
+#include "handle_myhistory.h"
+>>>>>>> Stashed changes
 
 void print_help() {
     printf(
@@ -93,6 +98,7 @@ int main( int cargs, char** argv ) {
         return 1;
       }
 
+      add_to_history(user_in);
       num_args = get_args(args_buff, user_in);
       parse_args(args_buff, num_args);
 
