@@ -134,3 +134,14 @@ int list_aliases() {
     }
     return 0;
 }
+
+char **expand_alias(char *name) {
+    printf("expanding alias %s\n", name);
+    for (int i = 0; i < MAX_ENTRIES; i++) {
+        if (strcmp(list[i].name, name) == 0) {
+            return list[i].command;
+        }
+    }
+    perror("Alias not found");
+    return NULL;
+}
