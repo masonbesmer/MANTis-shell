@@ -10,7 +10,7 @@
 
 
 
-CommandHistory history;// a global variable to store command history 
+CommandHistory history;// a global variable to store command history
 
 
 //To store commands to the history.
@@ -37,15 +37,21 @@ void clear_history() {
 char* execute_history(int history_num) {
 
 	char* exe;
+  // Added this so that blindly executing the history doesn't execute badly.
+  if( strstr(history.commands[0], "myhistory") != NULL )
+    history_num++;
 
+  if(history_num > MAX_HISTORY) {
+    printf("Invalid history command number\n");
+    return NULL;
+  }
 	if(history_num <= 0 || history_num > history.count) {
 		printf("Invalid history command number\n");
 		return NULL;
 	}
 	else {
-		printf("Executing history command #%d: %s\n", history_num, history.commands[history_num + 1]);
-		//TODO:Implement your code to execute the command here
-		exe = history.commands[history_num + 1];
+		exe = history.commands[history_num - 1];
+		printf("Executing history command #%d: %s\n", history_num, exe);
 		return exe;
 	}
 }
@@ -53,9 +59,10 @@ char* execute_history(int history_num) {
 //To print all command history.
 void print_history() {
 
-	printf("History of previous commans:\n");
+	printf("History of previous commands:\n");
 	for(int i = 0; i < history.count; i++) {
-		printf("%d: %s\n", i + 1, history.commands[i]);
+		printf("%d: %s %s \n",
+        i+1, strtok(history.commands[i],"\n"), (i==0)?"<-(Latest)":"");
 	}
 }
 
