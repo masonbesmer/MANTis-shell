@@ -36,14 +36,14 @@ char* set_prompt(char * prompt) {
   for ( int i=0; i < strlen(prompt); i++ )
     prompt[i] = tolower(prompt[i]);
 
-  if ( strcmp(prompt, "y\n") == 0 ) {
+  if ( strcmp(prompt, "y\n") == 0 || strcmp(prompt, "\n") == 0 ) {
     printf("Please enter your custom shell prompt\n(<= 10 chars): ");
     if ( getline(&prompt, &prompt_len, stdin) == -1 ) {
         perror("User input too long or error reading from stdin ");
         return NULL;
     }
 
-    else if ( strcmp(prompt, "\n") == 0 || strlen(prompt) > 11) {
+    else if ( strlen(prompt) > 11) {
       printf("Prompt too long or empty. Setting default prompt.\n");
       strcpy(prompt, "-->");
     }
