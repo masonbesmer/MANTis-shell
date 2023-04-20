@@ -9,11 +9,16 @@
 #include "path.h"
 #include "alias.h"
 #include "main.h"
+#include "pipe.h"
 
 int shell_cmd(char **args, int mode){
     if(mode == REDIR){
         printf("Redirection mode\n");
         return redirection(args);
+    }
+    if(mode == PIPE){
+        printf("Pipe mode\n");
+        return shell_pipe_cmd(args);
     }
     if(strcmp(args[0], "cd") == 0){
         handle_cd(args);
