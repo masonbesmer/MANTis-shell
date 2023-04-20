@@ -42,12 +42,10 @@ char* set_prompt(char * prompt) {
         perror("User input too long or error reading from stdin ");
         return NULL;
     }
-
-    else if ( strlen(prompt) > 11) {
+    else if ( strlen(prompt) > 11 || strcmp(prompt, "\n") == 0 ) {
       printf("Prompt too long or empty. Setting default prompt.\n");
       strcpy(prompt, "-->");
     }
-
   }
   else {
     strcpy(prompt, "-->");
@@ -63,7 +61,7 @@ void prompt(const char* prompt) {
 int main( int cargs, char** argv ) {
 
   int num_args;
-  char* cust_prompt;
+  char* cust_prompt = "";
   bool exit_flag = false;
   size_t user_in_len = MAX_ARG_LEN;
   char* shell_dir = (char*) calloc(PATH_MAX, sizeof(char));
