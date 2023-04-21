@@ -17,7 +17,6 @@ int shell_cmd(char **args, int mode){
         return redirection(args);
     }
     if(mode == PIPE){
-        printf("Pipe mode\n");
         return shell_pipe_cmd(args);
     }
     if(strcmp(args[0], "cd") == 0){

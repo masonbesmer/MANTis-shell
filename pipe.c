@@ -17,13 +17,10 @@ int parse_pipe_args ( char** cmd_buff[], char* input_args[]) {
     perror("ERROR: Bad malloc in shell_pipe_cmd() ");
     return -1;
   }
-
-
   if ( strcmp(input_args[0], "|") == 0) {
     perror("ERROR: Invalid pipe syntax, cannot start with a pipe.");
     return -1;
   }
-
   for (int i = 0; i < MAX_ARG_LEN; i++) {
     // handle last argument
     if ( input_args[i] != NULL )
@@ -34,7 +31,6 @@ int parse_pipe_args ( char** cmd_buff[], char* input_args[]) {
       num_cmds++;
       break;
     }
-
     // handle args
     if (strcmp(argument, "|") != 0) {
       arg_buff[num_args] = (char*)malloc(MAX_ARG_LEN*sizeof(char));
@@ -48,80 +44,70 @@ int parse_pipe_args ( char** cmd_buff[], char* input_args[]) {
       num_args = 0;
       num_cmds++;
     }
-
   }
   return num_cmds;
 }
 
-// Recursively forks and pipes output until no more commands needs be executed.
-// RETURNS 0 on SUCCESS and -1 on FAILURE
-int pipe_exec( char** pipe_commands[], int num_cmds, int curr, int fd_in ) {
+// Recursive pipe command execution function.
+// Expects: array of args arrays (NULL term for exec), index (start at 0)
+// fd of input for 1st cmd, fd of output for redirection if needed
+// Returns: an integer status
+// of the last command, enabling further redirection if necessary, and
+// -1 on error. fd_in and fd_out default to 0 and 1 respectively.
+int pipe_exec( char** cmds[], int index, int in, int out ) {
 
-  int fd[2], wstatus, pid = -1;
+  int status, pipe_fd[2];
 
-  if ( pipe(fd) == -1 ) {
-    perror("ERROR: Unable to assign pipe in pipe_exec. ");
-    return -1;
-  }
-  pid = fork();
-  // child
-  if ( pid == 0 ) {
-    // if fd passed in
-    if ( fd_in != 0 && fd_in != -1 ) {
-      // dup fd of pipe read to stdin
-      if ( dup2(fd_in, 0) == -1 ) {
-        perror("Unable to duplicate file descriptor.");
-        close(fd_in);
-        close(fd[0]);
-        close(fd[1]);
-        return -1;
-      }
-    }
-    else if ( fd_in == -1) {
-      perror("ERROR: Bad fd passed to pipe_exec. ");
-      return -1;
-    }
-
-    // dup pipe write over stdout
-    if (dup2(fd[1], 1) == -1) {
-      // pipe err
-      perror("Unable to duplicate file descriptor.");
-      close(fd_in);
-      close(fd[0]);
-      close(fd[1]);
-      return -1;
-    }
-
-    // close unused fd in child
-    close(fd[0]);
-    close(fd[1]);
-
-    execvp(*pipe_commands[curr], pipe_commands[curr]);
-  }
-
-  // parent
-  else if (pid > 0) {
-
-    if ( curr < num_cmds ) {
-      pipe_exec(pipe_commands, num_cmds, curr+1, fd[0]);
-    }
-
-    waitpid(pid, &wstatus, 0);
-
-    close(fd[0]);
-    close(fd[1]);
-
-    if ( !WEXITSTATUS(wstatus) ){
-      perror("Warning: One of the piped commands exited with an error. ");
-      return -1;
-    }
+  if ( cmds[index] == NULL ) {
     return 0;
   }
 
-  else { // fork error
-    close(fd[0]);
-    close(fd[1]);
-    perror("ERROR: Unable for fork successfully in pipe_exec. ");
+  if ( pipe(pipe_fd) == -1 ) {
+    perror("ERROR: Unable to create pipe.");
+    return -1;
+  }
+
+  pid_t pid = fork();
+
+  if (pid == 0) {
+    if (in != -1 && in != 0) {
+      dup2(in, STDIN_FILENO);
+      close(in);
+    }
+    close(pipe_fd[0]);
+    if (cmds[index + 1] != NULL) {
+      dup2(pipe_fd[1], STDOUT_FILENO);
+    }
+    else {
+      dup2(out, STDOUT_FILENO);
+    }
+    close(pipe_fd[1]);
+
+    execvp(cmds[index][0], cmds[index]);
+
+  }
+  else if (pid > 0)
+  {
+    close(pipe_fd[1]);
+
+    if (in != -1 && in != 0) {
+      close(in);
+    }
+    if (pipe_exec(cmds, index + 1, pipe_fd[0], 1) == -1 ){
+      return -1;
+    }
+
+    waitpid(pid, &status, 0);
+    if ( WEXITSTATUS(status) != 0 ) {
+      char message[1024];
+      sprintf(message,
+        "Pipe fail at \"%s\"; exit code %d.", cmds[index][0], status);
+      perror(message);
+      return -1;
+    }
+  }
+  else {
+    perror("ERROR: Bad fork.");
     return -1;
   }
   return 0;
@@ -133,19 +119,12 @@ int shell_pipe_cmd( char* args[] ) {
   int num_cmds;
 
   num_cmds = parse_pipe_args(cmd_buff, args);
-
   if ( num_cmds != -1 ) {
-    for ( int i = 0; i < num_cmds; i++) {
-      for (int j = 0; cmd_buff[i][j] != NULL; j++ ) {
-        printf("Cmd[%d]::Arg[%d]: %s\n", i, j, cmd_buff[i][j]);
-      }
-    }
-    pipe_exec(cmd_buff, num_cmds, 0, 0);
+    pipe_exec(cmd_buff, 0, STDIN_FILENO, STDOUT_FILENO);
   }
   else {
     perror("Unable to execute, bad syntax provided by user. ");
     return -1;
   }
-
   return 0;
 }
