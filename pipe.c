@@ -28,6 +28,7 @@ int parse_pipe_args ( char** cmd_buff[], char* input_args[]) {
     else {
       arg_buff[num_args] = (char*) NULL;
       cmd_buff[num_cmds] = arg_buff;
+      cmd_buff[num_cmds+1] = (char**) NULL;
       num_cmds++;
       break;
     }
@@ -58,18 +59,25 @@ int pipe_exec( char** cmds[], int index, int in, int out ) {
 
   int status, pipe_fd[2];
 
-  if ( cmds[index] == NULL ) {
-    return 0;
-  }
-
+  // Pipe config error.
   if ( pipe(pipe_fd) == -1 ) {
     perror("ERROR: Unable to create pipe.");
     return -1;
   }
 
+  // Base Case
+  if ( cmds[index] == NULL ) {
+    return 0;
+  }
+
+  // Begin Forking...
   pid_t pid = fork();
 
-  if (pid == 0) {
+  if ( pid < 0 ) { // Fork Syscall Error
+    perror("ERROR: Bad fork.");
+    return -1;
+  }
+  else if ( pid == 0 ) { // Child
     if (in != -1 && in != 0) {
       dup2(in, STDIN_FILENO);
       close(in);
@@ -84,9 +92,10 @@ int pipe_exec( char** cmds[], int index, int in, int out ) {
     close(pipe_fd[1]);
 
     execvp(cmds[index][0], cmds[index]);
-
+    perror("ERROR: Exec error. ");
+    return -1;
   }
-  else if (pid > 0)
+  else // Parent
   {
     close(pipe_fd[1]);
 
@@ -105,10 +114,7 @@ int pipe_exec( char** cmds[], int index, int in, int out ) {
       perror(message);
       return -1;
     }
-  }
-  else {
-    perror("ERROR: Bad fork.");
-    return -1;
+    return 0;
   }
   return 0;
 }

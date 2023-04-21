@@ -108,6 +108,7 @@ int parse_args( char* args_buff[], int num_args, bool* exit_flag) {
     j_args = 0;
 
     while ( token != NULL ) {
+
       // catch pipe and redirection in the args
       if ( mode == EXEC ) {
         // Set exec type for redirection
@@ -126,6 +127,7 @@ int parse_args( char* args_buff[], int num_args, bool* exit_flag) {
         if ( strstr(token, "<") != NULL || strstr(token, ">") != NULL)
           mode = BOTH;
       }
+
       // parse <, >, and | into a separate arg token
       if ( mode != EXEC ) {
         // if current argument contains a pipe, <, or > parge argument again
@@ -171,6 +173,8 @@ int parse_args( char* args_buff[], int num_args, bool* exit_flag) {
         }
         free(subtoken);
       }
+
+      // store token normally
       else{
         args[j_args] = (char*)malloc((strlen(token)+1)*sizeof(char));
         strcpy(args[j_args], token);
