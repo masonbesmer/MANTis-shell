@@ -63,13 +63,15 @@ int pipe_exec( char** pipe_commands[], int num_cmds, int curr, int fd_in ) {
     perror("ERROR: Unable to assign pipe in pipe_exec. ");
     return -1;
   }
-
-  if ( (pid == fork()) == 0 ) { // child
+  pid = fork();
+  // child
+  if ( pid == 0 ) {
     // if fd passed in
     if ( fd_in != 0 && fd_in != -1 ) {
-      // assign pipe read to stdin
+      // dup fd of pipe read to stdin
       if ( dup2(fd_in, 0) == -1 ) {
         perror("Unable to duplicate file descriptor.");
+        close(fd_in);
         close(fd[0]);
         close(fd[1]);
         return -1;
@@ -80,14 +82,16 @@ int pipe_exec( char** pipe_commands[], int num_cmds, int curr, int fd_in ) {
       return -1;
     }
 
-    // pipe write over stdout
+    // dup pipe write over stdout
     if (dup2(fd[1], 1) == -1) {
       // pipe err
       perror("Unable to duplicate file descriptor.");
+      close(fd_in);
       close(fd[0]);
       close(fd[1]);
       return -1;
     }
+
     // close unused fd in child
     close(fd[0]);
     close(fd[1]);
@@ -95,18 +99,21 @@ int pipe_exec( char** pipe_commands[], int num_cmds, int curr, int fd_in ) {
     execvp(*pipe_commands[curr], pipe_commands[curr]);
   }
 
-  else if (pid > 0) { // parent
+  // parent
+  else if (pid > 0) {
 
     if ( curr < num_cmds ) {
       pipe_exec(pipe_commands, num_cmds, curr+1, fd[0]);
     }
 
+    waitpid(pid, &wstatus, 0);
+
     close(fd[0]);
     close(fd[1]);
 
-    waitpid(pid, NULL, 0);
     if ( !WEXITSTATUS(wstatus) ){
       perror("Warning: One of the piped commands exited with an error. ");
+      return -1;
     }
     return 0;
   }
