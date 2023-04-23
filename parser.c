@@ -44,6 +44,11 @@ int get_args( char* args_buff[], char* userin ) {
           if ( !inquote ) {
             buff[buff_ind] = '\0';
             args_buff[num_args] = (char*)malloc((strlen(buff)+1)*sizeof(char));
+            if ( args_buff[num_args] == NULL ) {
+              perror("ERROR: Bad malloc on parser.");
+              return -1;
+            }
+
             strcpy(args_buff[num_args], buff);
             num_args++;
             buff_ind = 0;
@@ -182,18 +187,29 @@ int parse_args( char* args_buff[], int num_args_in, bool* exit_flag) {
               mode = BOTH;
             // copy the buffer up to this char exclusive as an arg
             buff[buff_ind] = '\0';
-            args[num_args] = (char*)malloc((strlen(buff)+1)*sizeof(char));
+
             if ( buff[0] != '\0' ) {
+              args[num_args] = (char*)malloc((strlen(buff)+1)*sizeof(char));
+              if ( args[num_args] == NULL ) {
+                perror("ERROR: Bad malloc on parser.");
+                return -1;
+              }
+
               strcpy(args[num_args], buff);
               buff_ind = 0;
               num_args++;
             }
+
             // add the redirection character as an arg
             buff[buff_ind] = token[j];
             buff[buff_ind+1] = '\0';
             args[num_args] = (char*)malloc((strlen(buff)+1)*sizeof(char));
-            num_args++;
+            if ( args[num_args] == NULL ) {
+              perror("ERROR: Bad malloc on parser.");
+              return -1;
+            }
             strcpy(args[num_args], buff);
+            num_args++;
             break;
           }
         case '|':
@@ -209,16 +225,29 @@ int parse_args( char* args_buff[], int num_args_in, bool* exit_flag) {
               mode = BOTH;
             // copy the buffer up to this char exclusive as an arg
             buff[buff_ind] = '\0';
-            args[num_args] = (char*)malloc((strlen(buff)+1)*sizeof(char));
+
             if ( buff[0] != '\0' ) {
+              args[num_args] = (char*)malloc((strlen(buff)+1)*sizeof(char));
+
+              if ( args[num_args] == NULL ) {
+                perror("ERROR: Bad malloc on parser.");
+                return -1;
+              }
+
               strcpy(args[num_args], buff);
               buff_ind = 0;
               num_args++;
             }
+
             // add the pipe character as an arg
             buff[buff_ind] = token[j];
             buff[buff_ind+1] = '\0';
             args[num_args] = (char*)malloc((strlen(buff)+1)*sizeof(char));
+
+            if ( args[num_args] == NULL ) {
+              perror("ERROR: Bad malloc on parser.");
+              return -1;
+            }
             strcpy(args[num_args], buff);
             num_args++;
             break;
@@ -232,10 +261,18 @@ int parse_args( char* args_buff[], int num_args_in, bool* exit_flag) {
               buff_ind++;
               break;
             }
+
             // copy the buffer up to this char exclusive as an arg
             buff[buff_ind] = '\0';
-            args[num_args] = (char*)malloc((strlen(buff)+1)*sizeof(char));
+
             if ( buff[0] != '\0' ) {
+              args[num_args] = (char*)malloc((strlen(buff)+1)*sizeof(char));
+
+              if ( args[num_args] == NULL ) {
+                perror("ERROR: Bad malloc on parser.");
+                return -1;
+              }
+
               strcpy(args[num_args], buff);
               buff_ind = 0;
               num_args++;
@@ -247,8 +284,14 @@ int parse_args( char* args_buff[], int num_args_in, bool* exit_flag) {
         case '\0':
           {
             buff[buff_ind] = token[j];
-            args[num_args] = (char*)malloc((strlen(buff)+1)*sizeof(char));
+
             if ( buff[0] != '\0' ) {
+              args[num_args] = (char*)malloc((strlen(buff)+1)*sizeof(char));
+              if ( args[num_args] == NULL ) {
+                perror("ERROR: Bad malloc on parser.");
+                return -1;
+              }
+
               strcpy(args[num_args], buff);
               buff_ind = 0;
               num_args++;

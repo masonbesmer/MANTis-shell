@@ -7,13 +7,13 @@
 #include "pipe.h"
 
 int parse_pipe_args ( char** cmd_buff[], char* input_args[]) {
-  char* argument = (char*)malloc(MAX_ARG_LEN*sizeof(char));
+
   char** arg_buff = (char**)malloc(MAX_ARG_LEN*sizeof(char**));
 
   int num_args = 0;
   int num_cmds = 0;
 
-  if ( argument == NULL ) {
+  if ( arg_buff == NULL ) {
     perror("ERROR: Bad malloc in shell_pipe_cmd() ");
     return -1;
   }
@@ -21,21 +21,22 @@ int parse_pipe_args ( char** cmd_buff[], char* input_args[]) {
     perror("ERROR: Invalid pipe syntax, cannot start with a pipe.");
     return -1;
   }
+
   for (int i = 0; i < MAX_ARG_LEN; i++) {
-    // handle last argument
-    if ( input_args[i] != NULL )
-      strcpy(argument, input_args[i]);
-    else {
+
+    // handle last input_args[i]
+    if ( input_args[i] == NULL) {
       arg_buff[num_args] = (char*) NULL;
       cmd_buff[num_cmds] = arg_buff;
       cmd_buff[num_cmds+1] = (char**) NULL;
       num_cmds++;
       break;
     }
-    // handle args
-    if (strcmp(argument, "|") != 0) {
-      arg_buff[num_args] = (char*)malloc(MAX_ARG_LEN*sizeof(char));
-      strcpy(arg_buff[num_args], argument);
+
+    // handle args normally (curr arg is not pipe)
+    if (strcmp(input_args[i], "|") != 0) {
+      arg_buff[num_args] = (char*)malloc((strlen(input_args[i])+1)*sizeof(char));
+      strcpy(arg_buff[num_args], input_args[i]);
       num_args++;
     }
     else { // split commands on pipe
@@ -132,5 +133,15 @@ int shell_pipe_cmd( char* args[] ) {
     perror("Unable to execute, bad syntax provided by user. ");
     return -1;
   }
+
+  for ( int i=0; i < num_cmds; i++ ){
+    int j=0;
+    while(cmd_buff[i][j] != NULL){
+      free(cmd_buff[i][j]);
+      j++;
+    }
+    free(cmd_buff[i]);
+  }
+
   return 0;
 }
