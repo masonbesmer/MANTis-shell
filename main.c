@@ -126,7 +126,7 @@ int main( int cargs, char** argv ) {
         free(args_buff[i]);
       }
 
-      if (exit_flag) {
+      if ( exit_flag ) {
         break;
       }
 
@@ -137,39 +137,46 @@ int main( int cargs, char** argv ) {
         return 1;
       }
     }
+    free(cust_prompt);
   }
 
   // batch mode
   else if ( cargs == 2 ) {
-    char* line = (char*)malloc(MAX_ARG_LEN*sizeof(char));
+
+    char* batch_args[1024];
+    int num_batch_args = 0;
+
     printf("Batch mode.\n\n");
 
-    if (args_buff == NULL ){
-      perror("ERROR: Unable to malloc args_buff in get_args ");
-      return 1;
+    num_batch_args = get_args_from_batch(batch_args, argv[1]);
+
+    if ( num_batch_args == -1 ) {
+      perror("Error retrieving args from file.");
+      return -1;
     }
 
-    num_args = get_args_from_batch(args_buff, argv[1]);
+    for( int i = 0; i < num_batch_args; i++) {
 
-    for( int i = 0; i < num_args; i++) {
-      strcpy(line, args_buff[i]);
-      parse_args(args_buff, num_args, &exit_flag);
-      if (exit_flag)
+      if ( exit_flag ) {
         break;
+      }
+
+      num_args = get_args(args_buff, batch_args[i]);
+
+      parse_args(args_buff, num_args, &exit_flag);
     }
+
     for (int i = 0; i < num_args; i++) {
       free(args_buff[i]);
     }
-    if (line != NULL)
-      free(line);
   }
+
   else if ( cargs > 2 || cargs < 1 ) {
     errno = EINVAL;
     perror("Incorrect number of arguments. ");
     return 1;
   }
 
-  free(cust_prompt);
   free(shell_dir);
   free(args_buff);
   free(user_in);

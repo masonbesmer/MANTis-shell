@@ -14,42 +14,75 @@
 // Returns integer number of entries in argument buffer, or -1 on error.
 int get_args( char* args_buff[], char* userin ) {
 
-  char* token, *input;
-  input = (char*) malloc((strlen(userin) + 1) * sizeof(char));
-  int index = 0;
-  strcpy(input, userin);
-  token = strtok(input, ";");
+  char buff[512] = "";
+  int buff_ind = 0, num_args = 0;
+  char curr_quote = '\0';
+  bool inquote = false;
 
-  if ( token == NULL ) {
-    printf("NOTE: User input has no tokenizable content.\n");
-  }
+  for ( int i = 0; i < strlen(userin); i++ ) {
 
-  while ( token != NULL ) {
-    args_buff[index] = (char*)malloc((strlen(token) + 1) * sizeof(char));
-    if( args_buff[index] == NULL ) {
-      perror("ERROR: malloc failed in args_buffer in get_args ");
-      return -1;
+    switch (userin[i]) {
+      case SQ: case DQ:
+        {
+          if ( !inquote ) {
+            curr_quote = userin[i];
+            inquote = true;
+          }
+          else {
+            if ( userin[i] == curr_quote )
+              inquote = false;
+          }
+
+          buff[buff_ind] = userin[i];
+          buff_ind++;
+
+          break;
+        }
+
+      case ';': case '\0': case '\n': case '\r': case '\v':
+        {
+          if ( !inquote ) {
+            buff[buff_ind] = '\0';
+            args_buff[num_args] = (char*)malloc((strlen(buff)+1)*sizeof(char));
+            strcpy(args_buff[num_args], buff);
+            num_args++;
+            buff_ind = 0;
+          }
+          else {
+            buff[buff_ind] = userin[i];
+            buff_ind++;
+          }
+          break;
+        }
+
+      default:
+        {
+          buff[buff_ind] = userin[i];
+          buff_ind++;
+        }
     }
-    strcpy(args_buff[index], token);
-    token = strtok(NULL, ";");
-    index ++;
   }
+
+  // catch mismatched quotes in user input
+  if (inquote == true ) {
+    printf("Invalid syntax, mismatched quotes.\n" );
+    return -1;
+  }
+
   // This will return 0 if the user_args buffer is empty
   // and an index > 0 if it is not empty.
-  free(input);
-  return index;
+  return num_args;
 }
 
 // Read args from a batchfile into a supplied allocated character buffer.
 // Expects an empty args buffer reference and a filename.
 // Returns integer number of entries in argument buffer, or -1 on error.
-int get_args_from_batch( char * args_buff[], char * filename ) {
+int get_args_from_batch( char* args_buff[], char * filename ) {
 
   // Open file for reading
   FILE* batchfile;
   char batch_buff[512];
-  char* token;
-  int index = 0;
+  int num_args = 0;
 
   if ( (batchfile = fopen(filename, READ_ONLY)) == NULL ) {
     perror("ERROR: Unable to open batch file for reading, file DNE ");
@@ -58,135 +91,187 @@ int get_args_from_batch( char * args_buff[], char * filename ) {
 
   while ( (fgets(batch_buff, MAX_ARG_LEN, batchfile)) != NULL) {
 
-    token = strtok(batch_buff, "\n;");
-    if ( token == NULL ) {
-      printf("NOTE: User input has no tokenizable content.\n");
+    args_buff[num_args] = (char*)malloc((strlen(batch_buff)+1) * sizeof(char));
+
+    if ( args_buff[num_args] == NULL ) {
+      perror("ERROR: Bad malloc in batch_args processing.");
+      return -1;
     }
 
-   while ( token != NULL ) {
-      args_buff[index] = (char*) malloc((strlen(token) + 1));
-      if( args_buff[index] == NULL ) {
-        perror("ERROR: malloc failed in args_buffer in get_args ");
-        return -1;
-      }
-      strcpy(args_buff[index], token);
-      token = strtok(NULL, ";");
-      index ++;
-    }
+    strcpy(args_buff[num_args], batch_buff);
+    num_args++;
   }
-  if ( index == 0 ) {
+
+  if ( num_args == 0 ) {
     // Have not read anything at all from file.
     perror("WARNING: Batch file empty or is improperly formatted ");
   }
   // This will return 0 if the user_args buffer is empty
   // and an index > 0 if it is not empty.
   fclose(batchfile);
-  return index;
+  return num_args;
 }
 
 // Parse populated arument buffer into mult. arrays of exec args.
-// Then exec on each array sequentially. TODO Must handle exit() calls here.
+// Then exec on each array sequentially.
 // Returns 0 on success, -1 on failure.
-int parse_args( char* args_buff[], int num_args, bool* exit_flag) {
+int parse_args( char* args_buff[], int num_args_in, bool* exit_flag) {
   // create a args array buffer (args[][])
   char* token;
-  int j_args;
   char* args[512];
-  char delims[] = " \t\v\r\n";
-  int mode = EXEC;
-  // in a loop for each command to be processed
-  // for each item in args_buffer, create an args[] and insert it into the array
-  for ( int i = 0; i < num_args; i++ ) {
+  char  curr_quote  = '\0';
+  bool  inquote     = false;
+  int   mode        = EXEC;
+  int  num_args;
 
-    token = strtok(args_buff[i], delims);
-    // strtok returns NULL token if nothing is read before EOF
+  for ( int i = 0; i < num_args_in; i++ ) {
+
+    char buff[512] = "";
+    int buff_ind   = 0;
+    num_args = 0;
+
+    token = (char*) malloc( (strlen(args_buff[i])+1)*sizeof(char) );
     if ( token == NULL ) {
-      // this eats empty args
+      perror("ERROR: Bad malloc in parse_args()");
+      return -1;
+    }
+
+    strcpy(token, args_buff[i]);
+
+    // eat empty args
+    if ( token[0] == '\0' ) {
       continue;
     }
 
-    j_args = 0;
+    // This loop processes a single entered argument line.
+    for ( int j = 0; j < strlen(token)+1; j++ ) {
 
-    while ( token != NULL ) {
-
-      // catch pipe and redirection in the args
-      if ( mode == EXEC ) {
-        // Set exec type for redirection
-        if ( strstr(token, "<") != NULL || strstr(token, ">") != NULL)
-          mode = REDIR;
-        // Set exec mode for piping
-        else if ( strstr(token, "|") != NULL )
-          mode = PIPE;
-      }
-        // after checking initial MODE, check for BOTH
-      if ( mode == REDIR ) {
-        if ( strstr(token, "|") != NULL )
-          mode = BOTH;
-      }
-      if ( mode == PIPE ) {
-        if ( strstr(token, "<") != NULL || strstr(token, ">") != NULL)
-          mode = BOTH;
-      }
-
-      // parse <, >, and | into a separate arg token
-      if ( mode != EXEC ) {
-        // if current argument contains a pipe, <, or > parge argument again
-        // into subtokens and add to args array
-        char* subtoken = malloc( (strlen(token) + 1) * sizeof(char) );
-        int sublen = 0;
-
-        for (int n = 0; n < strlen(token) + 1; n++) {
-          // end of subtoken
-          if ( sublen > 0 && token[n] == '\0' ) {
-            subtoken[sublen] = '\0';
-            args[j_args] = (char*)malloc((strlen(subtoken)+1)*sizeof(char));
-            strcpy(args[j_args], subtoken);
-            j_args++;
-            sublen = 0;
-          }
-
-          switch(token[n]) {
-            case '<': case '>': case '|':
-            { // if sublen > 0, terminate subtoken and add to arr
-              if ( sublen > 0 ) {
-                subtoken[sublen] = '\0';
-                args[j_args] = (char*)malloc((strlen(subtoken)+1)*sizeof(char));
-                strcpy(args[j_args], subtoken);
-                j_args ++;
-                sublen = 0;
+      switch (token[j]) {
+        // single or double quotes
+        case SQ: case DQ:
+          {
+            if ( !inquote ) {
+              inquote = true;
+              curr_quote = token[j];
+            }
+            else {
+              if ( token[j] == curr_quote ) {
+                curr_quote = '\0';
+                inquote = false;
               }
-              // add > , <, or | as a token
-              subtoken[0] = token[n];
-              subtoken[1] = '\0';
-              args[j_args] = (char*)malloc((strlen(subtoken)+1)*sizeof(char));
-              strcpy(args[j_args], subtoken);
-              j_args++;
-
+              else {
+                buff[buff_ind] = token[j];
+                buff_ind++;
+              }
+            }
+            break;
+          }
+        // pipes and delimeters, term buff & add arg, if pipe/redir add as arg
+        // piping and redirection
+        case '>': case '<':
+          {
+            if ( inquote ) {
+              buff[buff_ind] = token[j];
+              buff_ind++;
               break;
             }
-            default: // append any other character to the argument
-            {
-              subtoken[sublen] = token[n];
-              sublen ++;
+            // set the mode
+            if ( mode == EXEC )
+              mode = REDIR;
+            else if ( mode == PIPE )
+              mode = BOTH;
+            // copy the buffer up to this char exclusive as an arg
+            buff[buff_ind] = '\0';
+            args[num_args] = (char*)malloc((strlen(buff)+1)*sizeof(char));
+            if ( buff[0] != '\0' ) {
+              strcpy(args[num_args], buff);
+              buff_ind = 0;
+              num_args++;
             }
+            // add the redirection character as an arg
+            buff[buff_ind] = token[j];
+            buff[buff_ind+1] = '\0';
+            args[num_args] = (char*)malloc((strlen(buff)+1)*sizeof(char));
+            num_args++;
+            strcpy(args[num_args], buff);
+            break;
           }
-        }
-        free(subtoken);
-      }
+        case '|':
+          {
+            if ( inquote ) {
+              buff[buff_ind] = token[j];
+              buff_ind++;
+              break;
+            }
+            if ( mode == EXEC )
+              mode = PIPE;
+            else if ( mode == REDIR )
+              mode = BOTH;
+            // copy the buffer up to this char exclusive as an arg
+            buff[buff_ind] = '\0';
+            args[num_args] = (char*)malloc((strlen(buff)+1)*sizeof(char));
+            if ( buff[0] != '\0' ) {
+              strcpy(args[num_args], buff);
+              buff_ind = 0;
+              num_args++;
+            }
+            // add the pipe character as an arg
+            buff[buff_ind] = token[j];
+            buff[buff_ind+1] = '\0';
+            args[num_args] = (char*)malloc((strlen(buff)+1)*sizeof(char));
+            strcpy(args[num_args], buff);
+            num_args++;
+            break;
+          }
 
-      // store token normally
-      else{
-        args[j_args] = (char*)malloc((strlen(token)+1)*sizeof(char));
-        strcpy(args[j_args], token);
-        j_args++;
-      }
+        // delimeters
+        case ' ': case '\n': case '\r': case '\v': case '\t':
+          {
+            if ( inquote ) {
+              buff[buff_ind] = token[j];
+              buff_ind++;
+              break;
+            }
+            // copy the buffer up to this char exclusive as an arg
+            buff[buff_ind] = '\0';
+            args[num_args] = (char*)malloc((strlen(buff)+1)*sizeof(char));
+            if ( buff[0] != '\0' ) {
+              strcpy(args[num_args], buff);
+              buff_ind = 0;
+              num_args++;
+            }
 
-      token = strtok(NULL, delims);
+            break;
+          }
+
+        case '\0':
+          {
+            buff[buff_ind] = token[j];
+            args[num_args] = (char*)malloc((strlen(buff)+1)*sizeof(char));
+            if ( buff[0] != '\0' ) {
+              strcpy(args[num_args], buff);
+              buff_ind = 0;
+              num_args++;
+            }
+            break;
+          }
+        // anything that doesn't require special parsing gets added to the buff
+        default:
+          {
+            buff[buff_ind] = token[j];
+            buff_ind++;
+          }
+      }
     }
 
-    args[j_args] = (char*) NULL;
+    if ( token != NULL )
+      free(token);
+
+    // NULL terminate the args array
+    args[num_args] = (char*) NULL;
 
     if ( strcmp(args[0], "exit") == 0 ) {
+      printf("Exit flag thrown, line completed, exiting.\n");
       *exit_flag = true;
     }
 
@@ -195,10 +280,9 @@ int parse_args( char* args_buff[], int num_args, bool* exit_flag) {
       perror("shell_cmd() failed to exec ");
       return -1;
     }
-
-    // memory cleanup
-    for(int i = 0; i < j_args; i++)
+    for(int i = 0; i < num_args; i++)
       free(args[i]);
   }
+  // memory cleanup
   return 0;
 }

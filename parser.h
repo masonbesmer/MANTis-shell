@@ -29,6 +29,14 @@
 #define BOTH 3
 #endif
 
+#ifndef SQ
+#define SQ '\''
+#endif
+
+#ifndef DQ
+#define DQ '\"'
+#endif
+
 int get_args( char* args_buff[], char* user_in );
 int get_args_from_batch ( char* args_buff[], char * user_in );
 int parse_args( char* args_buff[], int num_args, bool* exit_flag);
