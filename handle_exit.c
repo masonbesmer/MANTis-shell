@@ -1,8 +1,9 @@
 #include "handle_exit.h"
 
+pid_t shell_pgid;
 
 int setup_exit() {
-  pid_t shell_pgid;
+  //pid_t shell_pgid;
   int shell_terminal;
   //put shell in to its own process group
   shell_pgid = getpid();
@@ -17,9 +18,9 @@ int setup_exit() {
     kill(-shell_pgid, SIGTTIN);
   }
 
-  //tcsetpgrp(STDIN_FILENO, getpid());
+  tcsetpgrp(STDIN_FILENO, getpid());
 
-  //signal(SIGSTP, handle_exit);
+  signal(SIGSTP, handle_exit);
   signal(SIGINT, handle_exit);
   return 0;
 }
@@ -27,8 +28,12 @@ int setup_exit() {
 void handle_exit(int signal) {
   printf("signal: %d\n", signal);
   if (tcgetpgrp(STDIN_FILENO) == getpgrp()) {
-    printf("in foreground, exiting");
+    //printf("in foreground, exiting");
+    tcsetpgrp(STDIN_FILENO, shell_pgid);
+    printf("parent put in fg now");
     exit(0);
+  } else {
+    // do nothing
   }
 }
 

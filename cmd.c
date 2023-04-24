@@ -53,6 +53,10 @@ int shell_cmd(char **args, int mode){
             clear_aliases();
         }
         else if(strcmp(args[1], "-r") == 0){
+            if (args[2] == NULL) {
+                printf("ERROR: No alias name provided\n");
+                return -1;
+            }
             remove_alias(args[2]);
         }
         else{

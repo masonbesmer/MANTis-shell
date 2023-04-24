@@ -15,12 +15,12 @@ int add_alias(char **iargs) {
 
 char **parse_alias(char **iargs) {
     //print all of iargs
-    // for (int i = 0; i < 100; i++) {
-    //     if (iargs[i] == NULL) {
-    //         break;
-    //     }
-    //     printf("iargs[%d]: %s\n", i, iargs[i]);
-    // }
+    for (int i = 0; i < 100; i++) {
+        if (iargs[i] == NULL) {
+            break;
+        }
+        printf("iargs[%d]: %s\n", i, iargs[i]);
+    }
 
     char *alias_name = strtok(iargs[1], "="); // get the part before "="
     char *cmd_arg_1 = strtok(NULL, "\'"); //get token after first "'"
