@@ -51,6 +51,7 @@ char* execute_history(int history_num) {
 	}
 	else {
 		exe = history.commands[history_num - 1];
+    strcat(exe, "\0");
 		printf("Executing history command #%d: %s\n", history_num, exe);
 		return exe;
 	}

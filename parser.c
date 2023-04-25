@@ -19,7 +19,7 @@ int get_args( char* args_buff[], char* userin ) {
   char curr_quote = '\0';
   bool inquote = false;
 
-  for ( int i = 0; i < strlen(userin); i++ ) {
+  for ( int i = 0; i < strlen(userin) + 1; i++ ) {
 
     switch (userin[i]) {
       case SQ: case DQ:
@@ -64,6 +64,7 @@ int get_args( char* args_buff[], char* userin ) {
         {
           buff[buff_ind] = userin[i];
           buff_ind++;
+
         }
     }
   }

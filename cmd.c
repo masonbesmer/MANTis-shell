@@ -35,9 +35,16 @@ int shell_cmd(char **args, int mode){
         }
         else{
             char hist_cmd[MAX_ARG_LEN];
+            int num_args;
+
             strcpy(hist_cmd, execute_history(atoi(args[1])));
-            int num_args = get_args(args, hist_cmd);
-            parse_args(args, num_args, false);
+
+            num_args = get_args(args, hist_cmd);
+
+            if( parse_args(args, num_args, false) == -1 ) {
+              perror("ERROR: Unable to parse hist arg. ");
+              return -1;
+            }
         }
         return 0;
     }
