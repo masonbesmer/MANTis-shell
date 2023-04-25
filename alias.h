@@ -21,5 +21,6 @@ char **parse_alias(char **iargs);
 int clear_aliases();
 int list_aliases();
 int store_alias(char **iargs);
+char **expand_alias(char *name);
 
 #endif
