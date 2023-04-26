@@ -1,14 +1,13 @@
-# major2
 
-Major 2 - Basic Shell Interpreter
+# Major 2 - Basic Shell Interpreter
 
-#Groups Names: Nathan, Alex, Mason, Tobi
+# Groups Names: Nathan, Alex, Mason, Tobi
 
 # Organization of the Project
 
-### The Interactive Mode (Nathan)
+## The Interactive Mode (Nathan)
 
-### The Batch Mode (Nathan) 
+## The Batch Mode (Nathan) 
 
 
 ## Built-In Commands
