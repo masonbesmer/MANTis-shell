@@ -52,22 +52,45 @@ int shell_cmd(char **args, int mode){
         // Eats exit haha
         return 0;
     }
-    else if(strcmp(args[0], "alias") == 0){
-        if(args[1] == NULL){
+    else if(strcmp(args[0], "alias") == 0 || strcmp(args[0], "uhlias") == 0){
+        int i=0;
+        while (args[i] != NULL) i++;
+        if(i==1){
             list_aliases();
         }
-        else if(strcmp(args[1], "-c") == 0){
+        else if(i==2&&strcmp(args[1], "-c") == 0){
             clear_aliases();
         }
-        else if(strcmp(args[1], "-r") == 0){
+        else if(i == 3&&strcmp(args[1], "-r") == 0){
             if (args[2] == NULL) {
                 printf("ERROR: No alias name provided\n");
                 return -1;
             }
             remove_alias(args[2]);
         }
-        else{
+        else if(i==2 && strstr(args[1], "=")!=NULL){
             add_alias(args);
+        } 
+        else if(i==3 && strcmp(args[1], "-e") ==0 ) {
+            char **expanded = expand_alias(args[2]);
+            if (expanded == NULL) {
+                printf("ERROR: Alias not found\n");
+                return -1;
+            }
+            int j = 0;
+            while (expanded[j] != NULL) {
+                printf("%s ", expanded[j]);
+                j++;
+            }
+            printf("\n");
+            for (int k = 0; k < j; k++) {
+                free(expanded[k]);
+            }
+            free(expanded);
+        }
+        else {
+            printf("ERROR: Invalid alias command\n");
+            return -1;
         }
         return 0;
     } else if(strcmp(args[0], "test") == 0){

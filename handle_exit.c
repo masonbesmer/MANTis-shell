@@ -22,6 +22,7 @@ int setup_exit() {
 
   signal(SIGSTP, handle_exit);
   signal(SIGINT, handle_exit);
+  //ctrl d
   return 0;
 }
 //c

@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #include "parser.h"
 
-#define MAX_ALIAS_LEN 200
-#define MAX_ALIAS_NAME_LEN 50
+#define MAX_ALIAS_LEN 20
+#define MAX_ALIAS_NAME_LEN 20
 #define MAX_ENTRIES 100
 
 struct Alias_List {
