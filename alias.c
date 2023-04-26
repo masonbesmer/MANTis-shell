@@ -3,6 +3,7 @@
 
 struct Alias_List list[MAX_ENTRIES];
 int numAliases = 0;
+char **alias_arr;
 
 int add_alias(char **iargs) {
     int result = store_alias(parse_alias(iargs));
@@ -10,45 +11,43 @@ int add_alias(char **iargs) {
         perror("parse/store_alias() failed");
         return -1;
     }
-    printf("Adding alias %s\n", iargs[0]);
+    //free alias_arr
+    // for (int i = 0; i < 100; i++) {
+    //     if (alias_arr[i] == NULL) {
+    //         break;
+    //     }
+    //     free(alias_arr[i]);
+    // }
+    // free(alias_arr);
     return 0;
 }
 
 char **parse_alias(char **iargs) {
-    //print all of iargs
+    alias_arr = (char**)malloc(sizeof(char*) * 512);
+    //copy iargs to alias_arr
     for (int i = 0; i < 100; i++) {
         if (iargs[i] == NULL) {
             break;
         }
-        printf("iargs[%d]: %s\n", i, iargs[i]);
+        alias_arr[i] = iargs[i];
     }
 
 
-    char *alias_name = strtok(iargs[1], "="); // get the part before =
-    //printf("alias name: %s\n", alias_name);
+    char *alias_name = strtok(alias_arr[1], "="); // get the part before =
     char *alias_cmd = strtok(NULL, "="); //get token after =
-    iargs[0] = alias_name;
-    //printf("alias commands: %s\n", alias_cmd);
-    //char **full_alias = (char**)malloc(sizeof(char*) * 512);
-    if ((iargs[1] = strtok(alias_cmd, " ")) == NULL) { //first arg
+    alias_arr[0] = alias_name;
+    if ((alias_arr[1] = strtok(alias_cmd, " ")) == NULL) { //first arg
         perror("alias command is empty");
         return NULL;
     }
     int i=2;
     while ((alias_name = strtok(NULL, " ")) != NULL) { //rest of args
-        //printf("alias_cur cmd: %s\n", alias_name);
-        iargs[i] = alias_name;
+        alias_arr[i] = alias_name;
         i++;
     }
-
-    for (int i = 0; i < 100; i++) {
-        if (iargs[i] == NULL) {
-            //printf("iargs[%d] is NULL", i);
-            break;
-        }
-        printf("arr to pass to store = iargs[%d]: %s\n", i, iargs[i]);
-    }
-    return iargs;
+    //free(alias_name);
+    //free(alias_cmd);
+    return alias_arr;
 }
 
 int store_alias(char **alias) {
@@ -62,21 +61,19 @@ int store_alias(char **alias) {
     if (alias[1] == NULL) {
         return -1;
     }
-    //if (strcmp(alias[1], ""))
     for (int i = 1; i < 100; i++) {
         if (alias[i] == NULL) {
             break;
         }
-        list[numAliases].command[i-1] = alias[i];
-        printf("command stored: %s\n", list[numAliases].command[i-1]);
+        //list[numAliases].command[i-1] = alias[i];
+        strncpy(list[numAliases].command[i-1], alias[i], MAX_ALIAS_LEN - 1);
     }
     for (int i = 0; i < 100; i++) {
         if (list[numAliases].command[i] == NULL) {
             break;
         }
-        printf("numAliases: %d\n", numAliases);
-        printf("command stored: %s\n", list[numAliases].command[i]);
     }
+    printf("Alias %s stored.\n", alias[0]);
     numAliases++;
     return 0;
 }
@@ -92,6 +89,7 @@ int remove_alias(char *name) {
                 }
                 memset(list[i].command[j], '\0', MAX_ALIAS_LEN - 1);
             }
+            printf("Alias %s removed.\n", name);
             return 0;
         }
     }
@@ -110,6 +108,7 @@ int clear_aliases() {
             memset(list[i].command[j], '\0', MAX_ALIAS_LEN - 1);
         }
     }
+    printf("All aliases cleared.\n");
     return 0;
 }
 
@@ -127,11 +126,12 @@ int list_aliases() {
             printf("\"\n");
         }
     }
+    printf("\nEnd of list\n");
     return 0;
 }
 
 char **expand_alias(char *name) {
-    printf("expanding alias %s\n", name);
+    printf("Expanding alias %s\n", name);
     for (int i = 0; i < MAX_ENTRIES; i++) {
         if (strcmp(list[i].name, name) == 0) {
             return list[i].command;
