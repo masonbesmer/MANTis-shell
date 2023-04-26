@@ -2,7 +2,9 @@
 
 Major 2 - Basic Shell Interpreter
 
-## The Shell
+#Groups Names: Nathan, Alex, Mason, Tobi
+
+# Organization of the Project
 
 ### The Interactive Mode (Nathan)
 
@@ -29,3 +31,9 @@ Major 2 - Basic Shell Interpreter
 ### Support Signal Handling and Terminal Control (Mason)
 
 ### The Alias command (Mason)
+
+# Design Overview
+
+# Complete Specification
+
+# Known Bugs or Problems
