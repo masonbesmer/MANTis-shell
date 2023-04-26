@@ -28,7 +28,6 @@ int redirection(char** args){
         perror("Error: cannot have both input and output redirection");
         return -1;
     }
-    printf("output boolean: %s\n", output ? "true" : "false");
     if(output){
         //if the redirection symbol is found, create a new array to hold the command
         char** command = malloc(sizeof(char*) * 100);
@@ -85,7 +84,6 @@ int redirection(char** args){
     {
         //open input redirection file
         int fd = open(args[i+1],O_RDONLY, 0600);
-        printf("input file: %s\n", args[i+1]);
         //if the file descriptor is not valid, return -1
         if (fd == -1){
             perror("Error opening file for input redirection");
@@ -99,8 +97,6 @@ int redirection(char** args){
             j++;
         }
         command[j] = NULL;
-        //print command 
-        printf("command: %s\n", command[0]);
         //create a new process
         pid_t pid = fork();
         //if the process is not valid, return -1
