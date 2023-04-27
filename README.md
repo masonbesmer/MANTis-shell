@@ -1,7 +1,7 @@
 
 # Major 2 - Basic Shell Interpreter
 
-# Groups Names: Nathan, Alex, Mason, Tobi
+## Groups Names: Nathan, Alex, Mason, Tobi
 
 # Organization of the Project
 
