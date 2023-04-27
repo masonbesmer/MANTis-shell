@@ -174,22 +174,6 @@ int pipe_redir(char** args)
             l++;
         }
         command2[l] = NULL;
-        //print both commands
-        printf("command 1: ");
-        int m = 0;
-        while (command[m] != NULL){
-            printf("args[%d]: %s \n", m,command[m]);
-            m++;
-        }
-        printf("\n");
-        printf("command 2: ");
-        int n = 0;
-        while (command2[n] != NULL){
-            printf("args[%d]: %s \n", n,command2[n]);
-            n++;
-        }
-        printf("\n");
-
         //pipe the two commands together then execute then write the output to the file
         int fd[2];
         pipe(fd);
