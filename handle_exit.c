@@ -2,40 +2,69 @@
 
 pid_t shell_pgid;
 
+// run in main to set up signal handling
 int setup_exit() {
-  //pid_t shell_pgid;
   int shell_terminal;
-  //put shell in to its own process group
+  // put shell in to its own process group
   shell_pgid = getpid();
   if (setpgid(shell_pgid, shell_pgid) < 0) {
     perror("setpgid");
     return -1;
   }
 
-  //get terminal process associated with the shell
+  // get terminal process associated with the shell
   shell_terminal = STDIN_FILENO;
+  // kill until in foreground
   while (tcgetpgrp(shell_terminal) != (shell_pgid = getpgrp())) {
     kill(-shell_pgid, SIGTTIN);
   }
 
+  // set shell to foreground (probably redundant)
   tcsetpgrp(STDIN_FILENO, getpid());
-
-  signal(SIGSTP, handle_exit);
-  signal(SIGINT, handle_exit);
-  //ctrl d
+  // ignore respective signals, inherited by child so custom handler needed
+  signal(SIGSTP, handle_exit); // ctrl z
+  signal(SIGINT, handle_exit); // ctrl c
+  signal(SIGQUIT, handle_exit); // ctrl d
   return 0;
 }
-//c
-void handle_exit(int signal) {
-  if (tcgetpgrp(STDIN_FILENO) == getpgrp()) {
-    //printf("in foreground, exiting");
+
+void handle_exit(int sig_num) {
+  printf("\nCaught signal %d\n", sig_num);
+  // if this pgrp is in the foreground
+  pid_t this_pgrp = getpgrp();
+  pid_t fg_pgrp = tcgetpgrp(STDIN_FILENO);
+  if (fg_pgrp == this_pgrp) {
+    // reset handlers to default to stop infinite loop
+    signal(SIGSTP, SIG_DFL);
+    signal(SIGINT, SIG_DFL);
+    signal(SIGQUIT, SIG_DFL);
+    // handle respective signal
+    switch (sig_num) {
+      case SIGSTP:
+        printf("\nCaught ^Z (SIGSTP)\n");
+        break;
+      case SIGINT:
+        printf("\nCaught ^C (SIGINT)\n");
+        break;
+      case SIGQUIT:
+        printf("\nIgnoring ^D (SIGQUIT)\n");
+        return;
+      default:
+        printf("\nCaught unhandled signal, doing nothing.\n");
+        return;
+    }
+    fflush(stdout);
+    kill(this_pgrp, sig_num);
+    // if the foreground is not the shell and this is the shell pgrp
+  } else if (fg_pgrp != shell_pgid && this_pgrp == shell_pgid && sig_num != SIGQUIT) {
     tcsetpgrp(STDIN_FILENO, shell_pgid);
-    exit(0);
   } else {
+    printf("Unexpected signal behaviour. Doing nothing.\n");
     // do nothing
   }
 }
 
+// this is all unrelated to the assignment and is just for testing
 int cmd_fork_template() {
   sigset_t mask;
   sigemptyset(&mask);
