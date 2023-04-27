@@ -18,6 +18,7 @@
 #include <stdbool.h>
 
 int redirection(char **args);
+int pipe_redir(char **args);
 
 
 #endif

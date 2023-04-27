@@ -19,6 +19,9 @@ int shell_cmd(char **args, int mode){
     if(mode == PIPE){
         return shell_pipe_cmd(args);
     }
+    if(mode == BOTH){
+        return pipe_redir(args);
+    }
     if(strcmp(args[0], "cd") == 0){
         handle_cd(args);
         return 0;
@@ -106,7 +109,6 @@ int shell_cmd(char **args, int mode){
             kill(getpid(), SIGTERM);
             return 1;
         }
-
     }else if(pid < 0){
         //error forking
         perror("ERROR: fork failed");
