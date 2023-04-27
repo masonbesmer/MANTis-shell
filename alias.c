@@ -152,7 +152,7 @@ int list_aliases() {
 }
 
 char **expand_alias(char *name) {
-    printf("Expanding alias %s\n", name);
+    printf("Expanding alias %s: ", name);
     for (int i = 0; i < MAX_ENTRIES; i++) {
         if (strcmp(list[i].name, name) == 0) {
             return list[i].command;

@@ -27,11 +27,9 @@ int setup_exit() {
 }
 //c
 void handle_exit(int signal) {
-  printf("signal: %d\n", signal);
   if (tcgetpgrp(STDIN_FILENO) == getpgrp()) {
     //printf("in foreground, exiting");
     tcsetpgrp(STDIN_FILENO, shell_pgid);
-    printf("parent put in fg now");
     exit(0);
   } else {
     // do nothing
