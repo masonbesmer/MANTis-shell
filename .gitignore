@@ -71,3 +71,4 @@ dkms.conf
 # Ignore all local history of files
 .history
 .ionide
+newshell_debug

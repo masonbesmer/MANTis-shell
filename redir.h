@@ -16,6 +16,7 @@
 #include <sys/wait.h>
 #include <string.h>
 #include <stdbool.h>
+#include "signal.h"
 
 int redirection(char **args);
 int pipe_redir(char **args);

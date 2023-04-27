@@ -86,10 +86,10 @@ int shell_cmd(char **args, int mode){
                 j++;
             }
             printf("\n");
-            for (int k = 0; k < j; k++) {
-                free(expanded[k]);
-            }
-            free(expanded);
+            // for (int k = 0; k < j; k++) {
+            //     free(expanded[k]);
+            // }
+            // free(expanded);
         }
         else {
             printf("ERROR: Invalid alias command\n");
@@ -102,7 +102,9 @@ int shell_cmd(char **args, int mode){
 
     pid_t pid;
     pid = fork();
-    if(pid == 0){
+    if(pid == 0){ 
+        setpgid(0, 0);
+        do {} while(tcgetpgrp(STDIN_FILENO) != getpgrp());
         //executes command and checks for errors
         if(execvp(args[0], args) == -1){
             perror("Unable to execute");
@@ -115,9 +117,13 @@ int shell_cmd(char **args, int mode){
         return 1;
     }
     else{
+        signal(SIGTTOU, SIG_IGN);
+        tcsetpgrp(STDIN_FILENO, pid);
         int status;
         //waits for child process to finish
-        waitpid(pid, &status, 0);
+        waitpid(pid, &status, WUNTRACED);
+        tcsetpgrp(STDIN_FILENO, getpgrp());
+        signal(SIGTTOU, SIG_DFL);
         return 0;
     }
     return 0;
