@@ -73,50 +73,84 @@ int pipe_exec( char** cmds[], int index, int in, int out ) {
 
   // Begin Forking...
   pid_t pid = fork();
-
-  if ( pid < 0 ) { // Fork Syscall Error
+  if (pid < 0) { // bad fork
     perror("ERROR: Bad fork.");
     return -1;
   }
-  else if ( pid == 0 ) { // Child
-    if (in != -1 && in != 0) {
-      dup2(in, STDIN_FILENO);
-      close(in);
-    }
-    close(pipe_fd[0]);
-    if (cmds[index + 1] != NULL) {
-      dup2(pipe_fd[1], STDOUT_FILENO);
-    }
-    else {
-      dup2(out, STDOUT_FILENO);
-    }
-    close(pipe_fd[1]);
-
-    execvp(cmds[index][0], cmds[index]);
-    perror("ERROR: Exec error. ");
-    return -1;
-  }
-  else // Parent
-  {
-    close(pipe_fd[1]);
-
-    if (in != -1 && in != 0) {
-      close(in);
-    }
-    if (pipe_exec(cmds, index + 1, pipe_fd[0], 1) == -1 ){
+  else if (pid == 0) { // pipe processes
+    printf("pipeprocess");
+    fflush(stdout);
+    setpgid(0, 0);
+    do {} while(tcgetpgrp(STDIN_FILENO) != getpgrp());
+    printf("pipe process");
+    fflush(stdout);
+    //setsid();
+    pid_t pid_pipes = fork(); // fork pipes
+    if ( pid_pipes < 0 ) { // Fork Syscall Error
+      perror("ERROR: Bad fork.");
       return -1;
     }
+    else if ( pid_pipes == 0 ) { // pipe Child
+      printf("pipechild");
+      if (in != -1 && in != 0) {
+        dup2(in, STDIN_FILENO);
+        close(in);
+      }
+      close(pipe_fd[0]);
+      if (cmds[index + 1] != NULL) {
+        dup2(pipe_fd[1], STDOUT_FILENO);
+      }
+      else {
+        dup2(out, STDOUT_FILENO);
+      }
+      close(pipe_fd[1]);
 
-    waitpid(pid, &status, 0);
-    if ( WEXITSTATUS(status) != 0 ) {
-      char message[1024];
-      sprintf(message,
-        "Pipe fail at \"%s\"; exit code %d.", cmds[index][0], status);
-      perror(message);
+      execvp(cmds[index][0], cmds[index]);
+      perror("ERROR: Exec error. ");
       return -1;
     }
+    else // pipe Parent
+    {
+      //setpgrp();
+      printf("pipeparent");
+      fflush(stdout);
+      tcsetpgrp(STDIN_FILENO, pid_pipes);
+      close(pipe_fd[1]);
+
+      if (in != -1 && in != 0) {
+        close(in);
+      }
+      if (pipe_exec(cmds, index + 1, pipe_fd[0], 1) == -1 ){
+        return -1;
+      }
+      printf("poop");
+      waitpid(pid_pipes, &status, 0);
+      printf("pop");
+      if ( WEXITSTATUS(status) != 0 ) {
+        char message[1024];
+        sprintf(message,
+          "Pipe fail at \"%s\"; exit code %d.", cmds[index][0], status);
+        perror(message);
+        return -1;
+      }
+      return 0;
+    }
+
+  } else { // shell proc
+    pid_t shell_pgrp = getpgrp();
+    signal(SIGTTOU, SIG_IGN);
+    tcsetpgrp(STDIN_FILENO, pid);
+    int status;
+    //waits for pipe process to finish
+    //waitpid(pid, &status, WUNTRACED);
+    wait(&status);
+    tcsetpgrp(STDIN_FILENO, getpgrp());
+    signal(SIGTTOU, SIG_DFL);
+    printf("pipes done");
     return 0;
   }
+
+  
   return 0;
 }
 
