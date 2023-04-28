@@ -97,7 +97,7 @@ int store_alias(char **alias) {
 
 int remove_alias(char *name) {
     if (name == NULL) {
-        perror("Invalid syntax, no name provided");
+        printf("Invalid syntax, no name provided");
         return -1;
     }
     printf("Removing alias %s\n", name);
@@ -151,13 +151,49 @@ int list_aliases() {
     return 0;
 }
 
-char **expand_alias(char *name) {
-    printf("Expanding alias %s: ", name);
+void expand_alias(char *name, char **ret_arr, bool silent) {
+    ret_arr = NULL;
+    if (silent == false) {
+        printf("Expanding alias %s: ", name);
+    }
     for (int i = 0; i < MAX_ENTRIES; i++) {
         if (strcmp(list[i].name, name) == 0) {
-            return list[i].command;
+            copy_array(list[i].command, ret_arr);
         }
     }
-    perror("Alias not found");
-    return NULL;
+    if (silent == false) {
+        printf("Alias not found");
+    }
+}
+
+int free_array(char **arr) {
+    int i = 0;
+    while (arr[i] != NULL) {
+        free(arr[i]);
+        i++;
+    }
+    free(arr);
+    return 0;
+}
+
+int copy_array(char **src, char **dst) {
+    int num_elements = 0;
+    // count elemnts
+    while (src[num_elements] != NULL) {
+        num_elements++;
+    }
+    //char **dst = (char **)malloc((num_elements + 1) * sizeof(char *));
+    for (int i = 0; i < num_elements; i++) {
+        // allocate mem
+        int len = strlen(src[i]) + 1;
+        char *new_str = (char *)malloc(len * sizeof(char));
+        // copy string data
+        strncpy(new_str, src[i], len);
+        // assign string to array
+        dst[i] = new_str;
+        free(new_str);
+    }
+    // append numm pointer
+    dst[num_elements] = NULL;
+    return 0;
 }

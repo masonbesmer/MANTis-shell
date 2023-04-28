@@ -21,6 +21,8 @@ char **parse_alias(char **iargs);
 int clear_aliases();
 int list_aliases();
 int store_alias(char **iargs);
-char **expand_alias(char *name);
+void expand_alias(char *name, char **ret_arr, bool silent);
+int free_array(char **arr);
+int copy_array(char **src, char **dst);
 
 #endif
