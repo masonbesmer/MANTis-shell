@@ -103,7 +103,7 @@ int pipe_exec( char** cmds[], int index, int in, int out ) {
     if (in != -1 && in != 0) {
       close(in);
     }
-    if (pipe_exec(cmds, index + 1, pipe_fd[0], 1) == -1 ){
+    if (pipe_exec(cmds, index + 1, pipe_fd[0], out) == -1 ){
       return -1;
     }
 

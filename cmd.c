@@ -101,7 +101,11 @@ int shell_cmd(char **args, int mode){
     } else if(strcmp(args[0], "test") == 0){
         return cmd_fork_template();
     }
-
+    //check for alias
+    char** temp = check_alias(args[0]);
+    if(temp != NULL){
+        args = temp;
+    }
     pid_t pid;
     pid = fork();
     if(pid == 0){ 

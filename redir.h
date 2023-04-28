@@ -1,6 +1,6 @@
 /* CSCE 3600 - major 2 - group 6
    redir.h
-   author:  Tobi Adeoye
+   author:  Alex Ho
    date:    04/11/2023
    desc:    Command header
 */
@@ -17,6 +17,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "signal.h"
+#include "pipe.h"
 
 int redirection(char **args);
 int pipe_redir(char **args);

@@ -1,10 +1,9 @@
 /* CSCE 3600 - major 2 - group 6
    redir.c
-   author:  Tobi Adeoye
+   author:  Alex Ho
    date:    04/11/2023
    desc:    This code is used implement stdin or stdout redirection into a file on the shell. 
 */
-
 
 #include "redir.h"
 
@@ -75,10 +74,9 @@ int redirection(char** args){
             waitpid(pid, &status, 0);
         }
         //close the file descriptor
-        close(fd);
-        //free the memory
         free(command);
         free(file);
+        close(fd);
     }
     if(input)
     {
@@ -120,15 +118,20 @@ int redirection(char** args){
         }
         close(fd);
         //free the memory
+        for(i = 0; i < j; i++){
+            free(command[i]);
+        }
         free(command);
     }
     return 0;
 }
 int pipe_redir(char** args)
 {
+    //count the number of pipes
+    int i = 0;
     bool output = false;
     bool input = false;
-    int i = 0;
+    i = 0;
     while (args[i] != NULL){
         if (strcmp(args[i], ">") == 0){
             output = true;
@@ -145,9 +148,8 @@ int pipe_redir(char** args)
         return -1;
     }
     if(output){
-        //if the redirection symbol is found, hold the output file name
-        char* file = malloc(sizeof(char*) * 100);
-        file = strncpy(file, args[i+1], strlen(args[i+1]));
+        int num_commands;
+        char** commandbuff[MAX_ARG_LEN];
         //split the command by the redirection symbol
         char** command = malloc(sizeof(char*) * 100);
         int j = 0;
@@ -156,80 +158,48 @@ int pipe_redir(char** args)
             j++;
         }
         command[j] = NULL;
-        //split command by the pipe symbol
-        char** command2 = malloc(sizeof(char*) * 100);
-        int k = 0;
-        while (command[k] != NULL){
-            if (strcmp(command[k], "|") == 0){
-                command[k] = NULL;
-                k++;
-                break;
+        //grab the output file name
+        char* file = malloc(sizeof(char*) * 100);
+        file = strncpy(file, args[i+1], strlen(args[i+1]));
+        num_commands = parse_pipe_args(commandbuff,command);
+        //open the output file
+        int fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, 0600);
+        if(num_commands != -1){
+            //execute the commands and write the output to the file
+            pid_t pid = fork();
+            if(pid == 0){
+                dup2(fd,STDOUT_FILENO);
+                pipe_exec(commandbuff,0,STDIN_FILENO,STDOUT_FILENO);
+                //close the file descriptor
+                close(fd);
+                exit(0); //NEEDS TO BE HERE DO NOT DELETE
             }
-            k++;
-        }
-        int l = 0;
-        while (command[k] != NULL){
-            command2[l] = command[k];
-            k++;
-            l++;
-        }
-        command2[l] = NULL;
-        //pipe the two commands together then execute then write the output to the file
-        int fd[2];
-        pipe(fd);
-        pid_t pid = fork();
-        if (pid == 0){
-            dup2(fd[1], STDOUT_FILENO);
-            close(fd[0]);
-            close(fd[1]);
-            execvp(command[0], command);
-        }
-        else if (pid < 0){
-            perror("Error forking for output redirection");
-            return -1;
-        }
-        else {
-            int status;
-            waitpid(pid, &status, 0);
-            close(fd[1]);
-            pid_t pid2 = fork();
-            if (pid2 == 0){
-                dup2(fd[0], STDIN_FILENO);
-                close(fd[0]);
-                close(fd[1]);
-                //reconstruct the command 
-                char** command3 = malloc(sizeof(char*) * 100);
-                int o = 0;
-                while (command2[o] != NULL){
-                    command3[o] = command2[o];
-                    o++;
-                }
-                command3[o] = ">";
-                command3[o+1] = file;
-                command3[o+2] = NULL;
-                redirection(command3);
-                free(command3);
-            }
-            else if (pid2 < 0){
-                perror("Error forking for output redirection");
+            else if(pid < 0){
+                perror("Error forking for piping into output redirection");
                 return -1;
             }
-            else {
+            else{
                 int status;
-                close(fd[0]);
-                close(fd[1]);
-                waitpid(pid2, &status, 0);
+                waitpid(pid, &status, 0);
+                close(fd);
             }
         }
-        close(fd[0]);
-        close(fd[1]);
-        //free the memory
         free(command);
-        free(command2);
         free(file);
-        //flush stdin
-        fflush(stdin);
+        for ( int i=0; i < num_commands; i++ ){
+            int j=0;
+            while(commandbuff[i][j] != NULL){
+            free(commandbuff[i][j]);
+            j++;
+            }
+            free(commandbuff[i]);
+        }
+        //free the memory
         return 0;
+    }
+    if(input){
+        perror("Error: input redirection with pipes not supported");
+        return -1;
     }
     return 0;
 }

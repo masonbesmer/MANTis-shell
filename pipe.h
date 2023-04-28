@@ -21,5 +21,6 @@
 
 int parse_pipe_args ( char** cmd_buff[], char* input_args[]);
 int shell_pipe_cmd( char* args[] );
+int pipe_exec( char** cmds[], int index, int in, int out );
 
 #endif
