@@ -128,18 +128,7 @@ int redirection(char** args){
 int pipe_redir(char** args)
 {
     //count the number of pipes
-    int count = 0;
     int i = 0;
-    while (args[i] != NULL){
-        if (strcmp(args[i], "|") == 0){
-            count++;
-        }
-        i++;
-    }
-    if (count == 0 || count > 1){
-        perror("Error: invalid number of pipes");
-        return -1;
-    }
     bool output = false;
     bool input = false;
     i = 0;
