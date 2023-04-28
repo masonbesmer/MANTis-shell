@@ -161,3 +161,12 @@ char **expand_alias(char *name) {
     perror("Alias not found");
     return NULL;
 }
+
+char** check_alias(char *name){
+    for(int i = 0; i < MAX_ENTRIES; i++){
+        if(strcmp(list[i].name, name) == 0){
+            return list[i].command;
+        }
+    }
+    return NULL;
+}

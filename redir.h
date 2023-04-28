@@ -1,6 +1,6 @@
 /* CSCE 3600 - major 2 - group 6
    redir.h
-   author:  Tobi Adeoye
+   author:  Alex Ho
    date:    04/11/2023
    desc:    Command header
 */
