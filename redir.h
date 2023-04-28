@@ -17,6 +17,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "signal.h"
+#include "pipe.h"
 
 int redirection(char **args);
 int pipe_redir(char **args);
