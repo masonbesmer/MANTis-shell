@@ -19,6 +19,12 @@ int get_args( char* args_buff[], char* userin ) {
   char curr_quote = '\0';
   bool inquote = false;
 
+  if ( strlen(userin)+1 > 512 ) {
+    errno = EINVAL;
+    perror("Error: User entered string longer than 512 characters. ");
+    return -1;
+  }
+
   for ( int i = 0; i < strlen(userin) + 1; i++ ) {
 
     switch (userin[i]) {
@@ -123,7 +129,7 @@ int get_args_from_batch( char* args_buff[], char * filename ) {
 // Returns 0 on success, -1 on failure.
 int parse_args( char* args_buff[], int num_args_in, bool* exit_flag) {
   // create a args array buffer (args[][])
-  char* token;
+  //char* token;
   char* args[512];
   char  curr_quote  = '\0';
   bool  inquote     = false;
@@ -136,11 +142,7 @@ int parse_args( char* args_buff[], int num_args_in, bool* exit_flag) {
     int buff_ind   = 0;
     num_args = 0;
 
-    token = (char*) malloc( (strlen(args_buff[i])+1)*sizeof(char) );
-    if ( token == NULL ) {
-      perror("ERROR: Bad malloc in parse_args()");
-      return -1;
-    }
+    char token[512];
 
     strcpy(token, args_buff[i]);
 
@@ -172,8 +174,8 @@ int parse_args( char* args_buff[], int num_args_in, bool* exit_flag) {
             }
             break;
           }
-        // pipes and delimeters, term buff & add arg, if pipe/redir add as arg
-        // piping and redirection
+          // pipes and delimeters, term buff & add arg, if pipe/redir add as arg
+          // piping and redirection
         case '>': case '<':
           {
             if ( inquote ) {
@@ -254,7 +256,7 @@ int parse_args( char* args_buff[], int num_args_in, bool* exit_flag) {
             break;
           }
 
-        // delimeters
+          // delimeters
         case ' ': case '\n': case '\r': case '\v': case '\t':
           {
             if ( inquote ) {
@@ -299,17 +301,16 @@ int parse_args( char* args_buff[], int num_args_in, bool* exit_flag) {
             }
             break;
           }
-        // anything that doesn't require special parsing gets added to the buff
+          // anything that doesn't require special parsing gets added to the buff
         default:
           {
             buff[buff_ind] = token[j];
             buff_ind++;
           }
       }
+
     }
 
-    if ( token != NULL )
-      free(token);
 
     // NULL terminate the args array
     args[num_args] = (char*) NULL;
@@ -324,7 +325,7 @@ int parse_args( char* args_buff[], int num_args_in, bool* exit_flag) {
       perror("shell_cmd() failed to exec ");
       return -1;
     }
-    for(int i = 0; i < num_args; i++)
+    for(int i = 0; i < num_args+1; i++)
       free(args[i]);
   }
   // memory cleanup

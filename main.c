@@ -4,11 +4,12 @@
 // date:    08APR23
 // desc:    main function definition and basic shell logic
 
+#include <ctype.h>
+
 #include "main.h"
 #include "path.h"
 #include "parser.h"
 #include "handle_exit.h"
-#include <ctype.h>
 #include "handle_myhistory.h"
 #include "alias.h"
 
@@ -107,37 +108,45 @@ int main( int cargs, char** argv ) {
     printf(
         "\nBegin interactive mode...\n"
         "Enter \"exit\" to exit the shell. \n");
-    prompt(cust_prompt);
-    if ( getline(&user_in, &user_in_len, stdin) == -1 ) {
-      perror("User input too long or error reading from stdin ");
-      return 1;
-    }
 
-    while ( true ) {
+    do {
 
-      if (args_buff == NULL ){
-        perror("ERROR: Unable to malloc args_buff in get_args ");
-        return 1;
+      prompt(cust_prompt);
+
+      if ( getline(&user_in, &user_in_len, stdin) == -1 ) {
+        perror("User input too long or error reading from stdin ");
+        continue;
+      }
+
+      if ( strlen(user_in)+1 > 512 ) {
+        errno = EINVAL;
+        perror("ERROR: User entered arguments > max length (512 characters). ");
+        continue;
       }
 
       num_args = get_args(args_buff, user_in);
-      parse_args(args_buff, num_args, &exit_flag);
 
-      for ( int i = 0; i < num_args; i++) {
-        free(args_buff[i]);
-      }
+      if ( num_args > 0 ) {
 
-      if ( exit_flag ) {
-        break;
-      }
+        // Parse the user input into args[] for execution.
+        // Also sets the exit flag if exit was on this line.
+        parse_args(args_buff, num_args, &exit_flag);
 
-      add_to_history(user_in);
-      prompt(cust_prompt);
-      if ( getline(&user_in, &user_in_len, stdin) == -1 ) {
-        perror("User input too long or error reading from stdin ");
-        return 1;
+        // Free the memory after execution.
+        for ( int i = 0; i < num_args; i++) {
+          free(args_buff[i]);
+        }
+
+        if ( exit_flag ) {
+          break;
+        }
+
+        // Necessary for Tobi's functionality to work.
+        add_to_history(user_in);
+
       }
-    }
+    } while (true);
+
     free(cust_prompt);
   }
 
@@ -151,7 +160,7 @@ int main( int cargs, char** argv ) {
 
     num_batch_args = get_args_from_batch(batch_args, argv[1]);
 
-    if ( num_batch_args == -1 ) {
+    if ( num_batch_args < 0 ) {
       perror("Error retrieving args from file.");
       return -1;
     }
@@ -167,7 +176,7 @@ int main( int cargs, char** argv ) {
       parse_args(args_buff, num_args, &exit_flag);
     }
 
-    for (int i = 0; i < num_args; i++) {
+    for (int i = 0; i < num_args+1; i++) {
       free(args_buff[i]);
     }
   }
