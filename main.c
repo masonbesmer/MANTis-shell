@@ -175,7 +175,7 @@ int main( int cargs, char** argv ) {
       parse_args(args_buff, num_args, &exit_flag);
     }
 
-    for (int i = 0; i < num_args; i++) {
+    for (int i = 0; i < num_args+1; i++) {
       free(args_buff[i]);
     }
   }
