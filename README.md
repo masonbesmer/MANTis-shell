@@ -202,9 +202,9 @@ quoted argument, for instance.
 
 # Known Bugs or Problems
 
-Main loop: None
-Custom Prompt: None
-Parser: None
-Exit: None
-Path: None
+Main loop: None  
+Custom Prompt: None  
+Parser: None  
+Exit: None  
+Path: None  
 
