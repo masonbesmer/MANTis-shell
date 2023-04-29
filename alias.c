@@ -1,37 +1,38 @@
+// CSCE 3600 - Major 2 - Group 6
+// alias.c
+// author:  Mason Besmer
+// date:    28APR23
+// desc:    alias source file, handles alias creation, expansion, deletion, printing, and listing
+
 #include "alias.h"
 #include "parser.h"
 
 struct Alias_List list[MAX_ENTRIES];
-int numAliases = 0;
-char **alias_arr;
+int numAliases = 0; // total ever, not current
+char **alias_arr; // global so it can be freed later
 
+/// @brief  Creates an alias from the given args
+/// @param char** iargs 
+/// @return 0 on success, -1 on failure
 int add_alias(char **iargs) {
-    int result = store_alias(parse_alias(iargs));
-    if (result != 0) {
-        //perror("parse/store_alias() failed");
+    if (store_alias(parse_alias(iargs)) != 0) {
         return -1;
     }
-    //free alias_arr
-    // for (int i = 0; i < 100; i++) {
-    //     if (alias_arr[i] == NULL) {
-    //         break;
-    //     }
-    //     free(alias_arr[i]);
-    // }
-    // free(alias_arr);
     return 0;
 }
 
+/// @brief Parse the given args into an alias
+/// @param char** iargs
+/// @return NULL if invalid syntax, otherwise the alias array to be stored
 char **parse_alias(char **iargs) {
-    alias_arr = (char**)malloc(sizeof(char*) * 512);
+    alias_arr = (char**)malloc(sizeof(char*) * 512); // allocate alias_arr
     //copy iargs to alias_arr
-    for (int i = 0; i < 100; i++) {
-        if (iargs[i] == NULL) {
-            break;
-        }
-        alias_arr[i] = iargs[i];
+    int i = 0;
+    while (iargs[i] != NULL && i < 512) {
+        alias_arr[i] = (char*) malloc(sizeof(char) * 512);
+        strcpy(alias_arr[i], iargs[i]);
+        i++;
     }
-
 
     char *alias_name = strtok(alias_arr[1], "="); // get the part before =
     if (alias_name == NULL) {
@@ -43,26 +44,29 @@ char **parse_alias(char **iargs) {
         printf("ERROR: invalid syntax\n");
         return NULL;
     }
-    alias_arr[0] = alias_name;
-    alias_arr[1] = strtok(alias_cmd, " "); //set first arg
-    int i=2;
-    while ((alias_name = strtok(NULL, " ")) != NULL) { //rest of args
-        alias_arr[i] = alias_name;
-        i++;
+    strcpy(alias_arr[0], alias_name); //copy alias name to alias_arr[0]
+    strcpy(alias_arr[1], strtok(alias_cmd, " ")); //copy first arg to alias_arr[1]
+    int j=2;
+    while ((alias_name = strtok(NULL, " ")) != NULL) { // copy rest of args
+        alias_arr[j] = (char*) malloc(sizeof(char) * 512);
+        strcpy(alias_arr[j], alias_name); // copy
+        j++;
     }
-    //free(alias_name);
-    //free(alias_cmd);
-    return alias_arr;
+    return alias_arr; // return full alias array for storage
 }
 
+/// @brief Store the alias in the dictionary
+/// @param char** alias
+/// @return 0 on success, -1 on failure
 int store_alias(char **alias) {
     if (alias == NULL) {
         return -1;
     }
+    // check if alias already exists
     for (int i = 0; i < numAliases; i++) {
         if (strcmp(list[i].name, alias[0]) == 0) {
-            printf("Alias %s already exists, overwriting...\n", alias[0]);
-            memset(list[i].name, '\0', MAX_ALIAS_NAME_LEN - 1);
+            printf("Alias %s already exists, overwriting...\n", alias[0]); // overwrite it if it does
+            memset(list[i].name, '\0', MAX_ALIAS_NAME_LEN - 1); // clear previous alias
             for (int j = 0; j < 100; j++) {
                 if (list[i].command[j] == NULL) {
                     break;
@@ -72,56 +76,57 @@ int store_alias(char **alias) {
             break;
         }
     }
+    //store it in the list struct
     printf("Storing alias %s\n", alias[0]);
     strncpy(list[numAliases].name, alias[0], MAX_ALIAS_NAME_LEN - 1);
     if (alias[1] == NULL) {
         return -1;
     }
+    // copy over the commands
     for (int i = 1; i < 100; i++) {
         if (alias[i] == NULL) {
             break;
         }
-        //list[numAliases].command[i-1] = alias[i];
-        list[numAliases].command[i-1] = (char*)malloc(sizeof(char) * MAX_ALIAS_LEN);
-        strncpy(list[numAliases].command[i-1], alias[i], MAX_ALIAS_LEN - 1);
-    }
-    for (int i = 0; i < 100; i++) {
-        if (list[numAliases].command[i] == NULL) {
-            break;
-        }
+        list[numAliases].command[i-1] = (char*)malloc(sizeof(char) * MAX_ALIAS_LEN); // allocate memory
+        strncpy(list[numAliases].command[i-1], alias[i], MAX_ALIAS_LEN - 1); // copy over
     }
     printf("Alias %s stored.\n", alias[0]);
     numAliases++;
     return 0;
 }
 
+/// @brief Remove the specified alias
+/// @param char* name
+/// @return 0 on success, -1 on failure
 int remove_alias(char *name) {
     if (name == NULL) {
-        printf("Invalid syntax, no name provided");
+        perror("Invalid syntax, no name provided");
         return -1;
     }
     printf("Removing alias %s\n", name);
+    // search for the given alias
     for (int i = 0; i < MAX_ENTRIES; i++) {
         if (strcmp(list[i].name, name) == 0) {
-            memset(list[i].name, '\0', MAX_ALIAS_NAME_LEN - 1);
+            memset(list[i].name, '\0', MAX_ALIAS_NAME_LEN - 1); // delete it
             for (int j = 0; j < 100; j++) {
                 if (list[i].command[j] == NULL) {
                     break;
                 }
-                memset(list[i].command[j], '\0', MAX_ALIAS_LEN - 1);
+                memset(list[i].command[j], '\0', MAX_ALIAS_LEN - 1); // delete it
             }
             printf("Alias %s removed.\n", name);
             return 0;
         }
     }
-    perror("Alias not found");
+    printf("Alias not found\n");
     return -1;
 }
 
+/// @brief Clear all aliases from the list but dont decrement numAliases
+/// @return 0 on success, -1 on failure
 int clear_aliases() {
-    printf("Clearing all aliases\n");
     for (int i = 0; i < MAX_ENTRIES; i++) {
-        memset(list[i].name, '\0', MAX_ALIAS_NAME_LEN - 1);
+        memset(list[i].name, '\0', MAX_ALIAS_NAME_LEN - 1); // annotated previously
         for (int j = 0; j < 100; j++) {
             if (list[i].command[j] == NULL) {
                 break;
@@ -133,10 +138,12 @@ int clear_aliases() {
     return 0;
 }
 
+/// @brief List all aliases
+/// @return 0 on success, -1 on failure
 int list_aliases() {
     printf("Listing all aliases\n");
     for (int i = 0; i < MAX_ENTRIES; i++) {
-        if (strcmp(list[i].name, "") != 0 && list[i].name != NULL) {
+        if (strcmp(list[i].name, "") != 0) {
             printf("Name: %s, expands to: \"", list[i].name);
             for (int j = 0; j < 100; j++) {
                 if (list[i].command[j] == NULL) {
@@ -151,49 +158,49 @@ int list_aliases() {
     return 0;
 }
 
-void expand_alias(char *name, char **ret_arr, bool silent) {
-    ret_arr = NULL;
-    if (silent == false) {
-        printf("Expanding alias %s: ", name);
-    }
+/// @brief Expand given alias
+/// @param char* name 
+/// @return char** of expanded alias, NULL if not alias
+char **expand_alias(char *name) {
+    printf("Expanding alias %s: ", name);
     for (int i = 0; i < MAX_ENTRIES; i++) {
         if (strcmp(list[i].name, name) == 0) {
-            copy_array(list[i].command, ret_arr);
+            return list[i].command;
         }
     }
-    if (silent == false) {
-        printf("Alias not found");
-    }
+    perror("Alias not found");
+    return NULL;
 }
 
-int free_array(char **arr) {
-    int i = 0;
-    while (arr[i] != NULL) {
-        free(arr[i]);
-        i++;
+/// @brief Check if given name is an alias
+/// @param char* name
+/// @return char** of expanded alias, NULL if not alias
+char** check_alias(char *name){
+    for(int i = 0; i < MAX_ENTRIES; i++){
+        if(strcmp(list[i].name, name) == 0){
+            return list[i].command;
+        }
     }
-    free(arr);
-    return 0;
+    return NULL;
 }
 
-int copy_array(char **src, char **dst) {
-    int num_elements = 0;
-    // count elemnts
-    while (src[num_elements] != NULL) {
-        num_elements++;
+/// @brief Free all malloc'd memory
+void alias_cleanup() {
+    for (int i = 0; i < MAX_ENTRIES; i++) {
+        if (strcmp(list[i].name, "") != 0 && list[i].name != NULL) {
+            for (int j = 0; j < 100; j++) {
+                if (list[i].command[j] == NULL) {
+                    break;
+                }
+                free(list[i].command[j]); // go through entire alias dictionary and free all memory
+            }
+        }
     }
-    //char **dst = (char **)malloc((num_elements + 1) * sizeof(char *));
-    for (int i = 0; i < num_elements; i++) {
-        // allocate mem
-        int len = strlen(src[i]) + 1;
-        char *new_str = (char *)malloc(len * sizeof(char));
-        // copy string data
-        strncpy(new_str, src[i], len);
-        // assign string to array
-        dst[i] = new_str;
-        free(new_str);
+    for (int i = 0; i < 100; i++) {
+        if (alias_arr[i] == NULL) {
+            break;
+        }
+        free(alias_arr[i]); // free alias array from parser
     }
-    // append numm pointer
-    dst[num_elements] = NULL;
-    return 0;
+    free(alias_arr);
 }

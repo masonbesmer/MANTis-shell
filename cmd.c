@@ -75,23 +75,18 @@ int shell_cmd(char **args, int mode){
             add_alias(args);
         } 
         else if(i==3 && strcmp(args[1], "-e") ==0 ) {
-            char **expanded = malloc(MAX_ALIAS_LEN * sizeof(char *));
-            expand_alias(args[2], expanded, false);
+            char **expanded = expand_alias(args[2]);
             if (expanded == NULL) {
                 printf("ERROR: Alias not found\n");
                 return -1;
             }
-            printf("Expanding alias %s: ", args[2]);
             int j = 0;
             while (expanded[j] != NULL) {
                 printf("%s ", expanded[j]);
                 j++;
             }
             printf("\n");
-            // for (int k = 0; k < j; k++) {
-            //     free(expanded[k]);
-            // }
-            // free(expanded);
+
         }
         else {
             printf("ERROR: Invalid alias command\n");
