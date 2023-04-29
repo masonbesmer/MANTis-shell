@@ -1,8 +1,15 @@
+// CSCE 3600 - Major 2 - Group 6
+// handle_exit.c
+// author:  Mason Besmer
+// date:    28APR23
+// desc:    Pass exit signals to foreground process
+
 #include "handle_exit.h"
 
 pid_t shell_pgid;
 
-// run in main to set up signal handling
+// @brief Setup the shell to handle signals, and set up process groups.
+// @return 0 on success, -1 on failure
 int setup_exit() {
   int shell_terminal;
   // put shell in to its own process group
@@ -28,6 +35,7 @@ int setup_exit() {
   return 0;
 }
 
+// @brief Pass signal to foreground process.
 void handle_exit(int sig_num) {
   printf("\nCaught signal %d\n", sig_num);
   // if this pgrp is in the foreground
@@ -54,17 +62,18 @@ void handle_exit(int sig_num) {
         return;
     }
     fflush(stdout);
-    kill(this_pgrp, sig_num);
+    kill(this_pgrp, sig_num); // send signal to this process group
     // if the foreground is not the shell and this is the shell pgrp
   } else if (fg_pgrp != shell_pgid && this_pgrp == shell_pgid && sig_num != SIGQUIT) {
-    tcsetpgrp(STDIN_FILENO, shell_pgid);
+    tcsetpgrp(STDIN_FILENO, shell_pgid); // set shell to foreground
   } else {
     printf("Unexpected signal behaviour. Doing nothing.\n");
     // do nothing
   }
 }
 
-// this is all unrelated to the assignment and is just for testing
+// @brief Test function for forking
+// @return 0 on success, -1 on failure
 int cmd_fork_template() {
   sigset_t mask;
   sigemptyset(&mask);
