@@ -315,6 +315,11 @@ int parse_args( char* args_buff[], int num_args_in, bool* exit_flag) {
     // NULL terminate the args array
     args[num_args] = (char*) NULL;
 
+    // this had to be added because of the change to the parser
+    if ( args[0] == NULL ) {
+      continue;
+    }
+
     if ( strcmp(args[0], "exit") == 0 ) {
       printf("Exit flag thrown, line completed, exiting.\n");
       *exit_flag = true;
