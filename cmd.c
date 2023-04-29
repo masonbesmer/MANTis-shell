@@ -97,8 +97,6 @@ int shell_cmd(char **args, int mode){
             return -1;
         }
         return 0;
-    } else if(strcmp(args[0], "test") == 0){
-        return cmd_fork_template();
     }
     //check for alias
     char** temp = check_alias(args[0]);
