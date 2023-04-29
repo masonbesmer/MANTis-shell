@@ -36,11 +36,11 @@ int shell_cmd(char **args, int mode){
         else if(strcmp(args[1], "-c") == 0){
             clear_history();
         }
-        else{
+        else if(strcmp(args[1], "-e") == 0){
             char hist_cmd[MAX_ARG_LEN];
             int num_args;
 
-            strcpy(hist_cmd, execute_history(atoi(args[1])));
+            strcpy(hist_cmd, execute_history(atoi(args[2])));
 
             num_args = get_args(args, hist_cmd);
 
@@ -48,6 +48,10 @@ int shell_cmd(char **args, int mode){
               perror("ERROR: Unable to parse hist arg. ");
               return -1;
             }
+        }
+        else {
+            printf("ERROR: Invalid arguments for myhistory\n");
+            return -1;
         }
         return 0;
     }
