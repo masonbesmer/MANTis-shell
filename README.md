@@ -5,6 +5,8 @@
 
 # Organization of the Project
 
+## Note: Our shell is memory leak free.
+
 ## General Shell Operation (main() - Nathan)
 
 When our shell starts, is first checks the arguments to determine which mode the
@@ -185,7 +187,25 @@ file input redirection with piping.
 
 ### Support Signal Handling and Terminal Control (Mason)
 
+Signal handling in the shell is done with a custom handler defined in handle_exit.c,
+where the shell sets itself in its own process group. Then, for redundancy, it
+sets itself to the foreground group. It then sets the handlers for SIGINT, SIGSTP,
+and SIGQUIT. Any other signals are ignored, apart from the ones that cannot be
+ignored.
+
+The signal function is simple, it checks to see if the process is in the
+foreground, and then passes along the signal to said foreground process. If the
+process is not in the foreground, it is ignored.
+
 ### The Alias command (Mason)
+
+Alias.c defines functions for creating, storing, removing, listing, clearing, and
+printing aliases. It uses a global array stored in a struct to store the aliases
+and their associated commands, and provides functionality for parsing command line
+arguments and adding them to the alias dictionary. It supports any command.
+
+Alias also includes error checking and reporting for invalid syntax or attempts
+to remove non-existent aliases, and overwriting of aliases already defined.
 
 # Design Overview
 
@@ -228,9 +248,8 @@ quoted argument, for instance.
 
 # Known Bugs or Problems
 
-- Main loop: None  
+- Main loop: Pipes do not support exit handling. This is the intended functionality.  
 - Custom Prompt: None  
 - Parser: None  
 - Exit: None  
 - Path: None  
-
