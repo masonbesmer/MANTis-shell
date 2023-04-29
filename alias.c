@@ -186,6 +186,9 @@ char** check_alias(char *name){
 
 /// @brief Free all malloc'd memory
 void alias_cleanup() {
+    if (numAliases == 0) {
+        return;
+    }
     for (int i = 0; i < MAX_ENTRIES; i++) {
         if (strcmp(list[i].name, "") != 0 && list[i].name != NULL) {
             for (int j = 0; j < 100; j++) {
