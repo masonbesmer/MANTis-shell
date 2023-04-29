@@ -19,6 +19,12 @@ int get_args( char* args_buff[], char* userin ) {
   char curr_quote = '\0';
   bool inquote = false;
 
+  if ( strlen(userin)+1 > 512 ) {
+    errno = EINVAL;
+    perror("Error: User entered string longer than 512 characters. ");
+    return -1;
+  }
+
   for ( int i = 0; i < strlen(userin) + 1; i++ ) {
 
     switch (userin[i]) {
