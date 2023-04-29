@@ -20,6 +20,5 @@
 // function prototypes/declarations
 int setup_exit();
 void handle_exit(int);
-int cmd_fork_template();
 
 #endif
