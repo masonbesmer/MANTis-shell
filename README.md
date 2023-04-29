@@ -53,6 +53,14 @@ the first stage parser in interactive. Then all the argument lines are sent to
 parse_args() and processed by line of input identically to interactive mode,
 until the end of the file or the exit is command is reached.  
 
+## The Execution (shell_cmd() - Alex)
+
+The command execution takes in the parsed arguments entered in from the command
+line as well as a flag to determine what type of operation is occuring.
+The function then properly executes the functionality of the parsed arguments 
+based on the flags. The executor also expands any single command alias and also
+handles all built in command calls.
+
 ## Built-In Commands
 
 ### The CD command (Tobi)
@@ -129,12 +137,20 @@ part of the command.
 ## Extend Shell Commands
 
 ### Redirection (Alex)
+Redirection works largely the same as it does in a regular shell. If a 
+redirection operator is detected by the parser, shell_cmd() redirects to 
+redirection() and pipe_redir() for redirection and redirection with piping
+respectively. For simple singular output redirection, the redirection() 
+function correctly writes the output of a singular command into the specified
+file name. For simple singular input redirection, the redirection() function
+correctly reads the input file and properly reads it into the standard input
+for the function to execute off of.
 
 ### Pipelining (Nathan)
 
 Pipelining was designed with the idea that it could be done with as many
 commands sequentially as the user desires. It was actually much more cumbersome
-to design a functin in which only 1 or 2 pipes were supported.  
+to design a function in which only 1 or 2 pipes were supported.  
 
 If the argument parser detects a pipe, it tells shell_cmd to parse the input
 with parse_pipe_args() and then execute those args with shell_pipe_cmd().  
@@ -156,7 +172,16 @@ to pipe to the next recursive layer, forks, duplicated the write end of the FD
 to stdout and executes the command. Then, in the parent logic branch the 
 function calls itself, passing the read end of the file descriptor to the next
 function as the input for that function. This results in a pipe chain of
-variable length.  
+variable length.
+
+## Redirection with Piping (Alex)
+
+Aforementioned earlier in this README, there is a pipe_redir() function.
+This function currently only functions with a pipe chain into outputting into
+a specified file. This function leverages the pipe_exec()'s functionality to
+handle all pipe functionality in which the function writes the output from the
+pipe_exec() call to the specified file. Our shell does not support any type of
+file input redirection with piping.
 
 ### Support Signal Handling and Terminal Control (Mason)
 
@@ -198,13 +223,14 @@ shell.
 use single quotes in a double quoted argument and double quotes in a single
 quoted argument, for instance.  
 - Pipe chain output can be redirected to a file only at the end of the chain.
-- Pipe chaining with file input redirection is not supported.  
+- Pipe chaining with file input redirection is not supported.
+- Any Aliases that contain more than one command cannot be executed.  
 
 # Known Bugs or Problems
 
-Main loop: None  
-Custom Prompt: None  
-Parser: None  
-Exit: None  
-Path: None  
+- Main loop: None  
+- Custom Prompt: None  
+- Parser: None  
+- Exit: None  
+- Path: None  
 
