@@ -190,7 +190,5 @@ int main( int cargs, char** argv ) {
   free(shell_dir);
   free(args_buff);
   free(user_in);
-  //free alias dictionary
-  alias_cleanup();
   return 0;
 }
